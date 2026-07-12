@@ -1,0 +1,106 @@
+/* ---- Settings page ---- */
+.settings-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.settings-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+/* Avatar */
+.settings-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.settings-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-light);
+  border: 2px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.settings-avatar:hover { opacity: 0.85; }
+
+.settings-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.settings-avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-avatar-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Card footer */
+.settings-card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Feedback */
+.settings-feedback {
+  font-size: 0.82rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.settings-feedback--success {
+  background: rgba(72, 187, 120, 0.12);
+  color: #276749;
+}
+
+.settings-feedback--error {
+  background: rgba(196, 75, 75, 0.1);
+  color: #c44b4b;
+}
+
+/* Button variants */
+.btn-ghost--danger {
+  color: #c44b4b;
+}
+
+@media (max-width: 640px) {
+  .settings-page { padding: 1rem; }
+}

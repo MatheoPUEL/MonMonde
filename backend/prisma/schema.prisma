@@ -1,0 +1,305 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String
+  avatarUrl String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  shortcuts      Shortcut[]
+  books          Book[]
+  authors        Author[]
+  journalEntries JournalEntry[]
+  routines       Routine[]
+  citations      Citation[]
+}
+
+model Shortcut {
+  id        String   @id @default(cuid())
+  label     String
+  url       String
+  icon      String?
+  order     Int      @default(0)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+enum ReadingStatus {
+  WISHLIST
+  TO_READ
+  READING
+  FINISHED
+  ABANDONED
+}
+
+model Book {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  authorId      String
+  author        Author        @relation(fields: [authorId], references: [id])
+  synopsis      String?
+  isbn          String?
+  pageCount     Int?
+  genres        String[]
+  coverUrl      String?
+  coverType     String?
+  googleBooksId String?
+
+  status        ReadingStatus @default(WISHLIST)
+  owned         Boolean       @default(false)
+
+  rating        Int?
+  review        String?
+
+  favorite      Boolean       @default(false)
+  rereadCount   Int           @default(0)
+  tags          BookTag[]
+
+  currentPage   Int?
+  startedAt     DateTime?
+  finishedAt    DateTime?
+
+  notes         BookNote[]
+  citations     Citation[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([authorId])
+}
+
+model BookTag {
+  id     String @id @default(cuid())
+  name   String
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, name])
+  @@index([bookId])
+}
+
+model BookNote {
+  id        String   @id @default(cuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  title     String
+  content   String
+  chapter   String?
+  page      Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookId])
+}
+
+model Author {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  bio           String?
+  birthDate     DateTime?
+  deathDate     DateTime?
+  nationality   String?
+  photoUrl      String?
+  openLibraryId String?
+
+  books         Book[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+enum Mood {
+  EXCELLENT
+  GOOD
+  NEUTRAL
+  BAD
+  VERY_BAD
+}
+
+model JournalEntry {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  content     String
+  contentText String       @default("")
+
+  mood        Mood?
+  favorite    Boolean      @default(false)
+  pinned      Boolean      @default(false)
+  draft       Boolean      @default(false)
+
+  tags        JournalTag[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([userId, draft])
+  @@index([userId, favorite])
+  @@index([userId, pinned])
+  @@index([userId, mood])
+  @@index([userId, createdAt])
+}
+
+model JournalTag {
+  id      String       @id @default(cuid())
+  name    String
+  entryId String
+  entry   JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, name])
+  @@index([entryId])
+}
+
+enum RoutineType {
+  HABIT
+  TASK
+  OBLIGATION
+}
+
+enum TargetPeriod {
+  WEEK
+  MONTH
+}
+
+model Routine {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name         String
+  description  String?
+  type         RoutineType @default(HABIT)
+  category     String?
+  color        String      @default("#C4775A")
+  icon         String      @default("✅")
+
+  rruleString  String
+  startDate    DateTime    @default(now())
+  endDate      DateTime?
+  active       Boolean     @default(true)
+
+  hasQuantity  Boolean     @default(false)
+  unit         String?
+  targetCount  Int?
+  targetPeriod TargetPeriod?
+
+  completions  RoutineCompletion[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([userId, active])
+  @@index([userId, type])
+}
+
+model RoutineCompletion {
+  id        String   @id @default(cuid())
+  routineId String
+  routine   Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  date      DateTime
+  done      Boolean  @default(true)
+  value     Float?
+  note      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([routineId, date])
+  @@index([routineId])
+  @@index([routineId, date])
+}
+
+enum SourceType {
+  BOOK
+  ARTICLE
+  INTERNET
+  PODCAST
+  FILM
+  SERIES
+  VIDEO
+  PERSON
+  OTHER
+}
+
+model Citation {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  text       String
+  author     String?
+  sourceType SourceType @default(OTHER)
+  source     String?
+
+  bookId     String?
+  book       Book?      @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  page       Int?
+  chapter    String?
+
+  comment    String?
+  color      String     @default("#C4775A")
+  favorite   Boolean    @default(false)
+  viewCount  Int        @default(0)
+
+  tags       CitationTag[]
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([userId, favorite])
+  @@index([userId, sourceType])
+  @@index([bookId])
+  @@index([userId, createdAt])
+}
+
+model CitationTag {
+  id         String   @id @default(cuid())
+  name       String
+  citationId String
+  citation   Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
+
+  @@unique([citationId, name])
+  @@index([citationId])
+}
+
+model AuthorEnrichmentCache {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  olid      String    @unique
+  bio       String?
+  birthDate DateTime?
+  deathDate DateTime?
+  photoPath String?
+  cachedAt  DateTime  @default(now())
+}

@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+.env
+.env.local
+dist/
+build/
+*.log
+.superpowers/
+backend/uploads/
+
+# fichiers de copie en conflit (iCloud/Dropbox)
+**/* [0-9].*
+**/* [0-9]
