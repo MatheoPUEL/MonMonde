@@ -34,7 +34,7 @@ router.get('/:id', async (req, res, next) => {
       where: { id: req.params.id, userId: req.user!.id },
       include: {
         books: {
-          include: { tags: true },
+          include: { tags: true, author: true },
           orderBy: { createdAt: 'desc' },
         },
       },
