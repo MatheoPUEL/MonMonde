@@ -6,6 +6,7 @@ import fs from 'fs'
 import authRouter from './routes/auth'
 import modulesRouter from './routes/modules'
 import shortcutsRouter from './routes/shortcuts'
+import searchRouter from './routes/search'
 import readingRouter from './routes/reading'
 import journalRouter from './routes/journal'
 import routinesRouter from './routes/routines'
@@ -33,6 +34,7 @@ app.use('/uploads', express.static(uploadsDir))
 app.use('/api/auth', authRouter)
 app.use('/api/modules', modulesRouter)
 app.use('/api/shortcuts', shortcutsRouter)
+app.use('/api/search', searchRouter)
 app.use('/api/reading', readingRouter)
 app.use('/api/journal', journalRouter)
 app.use('/api/routines', routinesRouter)

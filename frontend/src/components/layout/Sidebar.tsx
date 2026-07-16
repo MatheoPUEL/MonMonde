@@ -11,6 +11,7 @@ import {
   IconMoon,
   IconLink,
   IconClose,
+  IconSearch,
   MODULE_ICONS,
 } from '../ui/icons'
 
@@ -31,9 +32,10 @@ interface Shortcut {
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
+  onOpenSearch: () => void
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onOpenSearch }: SidebarProps) {
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
@@ -66,6 +68,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       </div>
 
       <nav className="sidebar-nav">
+        <button
+          className="sidebar-nav-item sidebar-search-trigger"
+          onClick={() => { onClose(); onOpenSearch() }}
+        >
+          <span className="sidebar-nav-icon"><IconSearch size={17} /></span>
+          <span className="sidebar-nav-label">Rechercher</span>
+          <span className="sidebar-search-kbd">⌘K</span>
+        </button>
         <Link
           to="/"
           onClick={onClose}

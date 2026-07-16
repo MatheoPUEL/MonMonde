@@ -167,6 +167,24 @@ body {
   letter-spacing: 0.02em;
 }
 
+.sidebar-search-trigger {
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  width: 100%;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.sidebar-search-kbd {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  background: var(--bg-surface-3);
+  border-radius: var(--radius-sm);
+  padding: 0.05rem 0.4rem;
+  flex-shrink: 0;
+}
+
 .sidebar-shortcuts {
   flex: 1;
   display: flex;
@@ -327,6 +345,24 @@ body {
   font-family: var(--font-serif);
   font-size: 18px;
   font-weight: 600;
+}
+
+.mobile-topbar-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.mobile-topbar-search:hover {
+  background: var(--bg-surface-2);
 }
 
 .sidebar-overlay {

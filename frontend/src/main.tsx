@@ -8,6 +8,7 @@ import './styles/routines.css'
 import './styles/citations.css'
 import './styles/art.css'
 import './styles/settings.css'
+import './styles/search.css'
 import App from './App'
 
 createRoot(document.getElementById('root')!).render(
