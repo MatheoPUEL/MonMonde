@@ -10,6 +10,7 @@ const MODULES = [
   { slug: 'routines', name: 'Habitudes', description: 'Routines et suivi des habitudes', icon: '✅', available: true },
   { slug: 'reading', name: 'Lectures', description: 'Livres lus et en cours', icon: '📚', available: true },
   { slug: 'citations', name: 'Citations', description: 'Tes citations et extraits', icon: '💬', available: true },
+  { slug: 'art', name: "Œuvres d'art", description: 'Ta collection personnelle d\'œuvres', icon: '🎨', available: true },
 ]
 
 router.get('/', requireAuth, (_req, res) => {

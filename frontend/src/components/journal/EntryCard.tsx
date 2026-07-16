@@ -1,5 +1,6 @@
-import { JournalEntry, MOOD_EMOJIS, MOOD_LABELS } from '../../api/journal'
+import { JournalEntry, MOOD_LABELS } from '../../api/journal'
 import { GlassCard } from '../ui/GlassCard'
+import { MOOD_ICONS, IconPin, IconStar } from '../ui/icons'
 
 interface Props {
   entry: JournalEntry
@@ -11,21 +12,22 @@ export function EntryCard({ entry, onClick }: Props) {
     day: 'numeric', month: 'long', year: 'numeric',
   })
   const preview = entry.contentText.trim().slice(0, 120)
+  const MoodIcon = entry.mood ? MOOD_ICONS[entry.mood] : null
 
   return (
     <GlassCard className="entry-card" onClick={onClick}>
       <div className="entry-card-header">
         <div className="entry-card-meta">
           <span className="entry-card-date">{dateStr}</span>
-          {entry.mood && (
+          {entry.mood && MoodIcon && (
             <span className="entry-mood-chip">
-              {MOOD_EMOJIS[entry.mood]} {MOOD_LABELS[entry.mood]}
+              <MoodIcon size={12} /> {MOOD_LABELS[entry.mood]}
             </span>
           )}
         </div>
         <div className="entry-card-indicators">
-          {entry.pinned && <span title="Épinglée">📌</span>}
-          {entry.favorite && <span title="Favori" style={{ color: '#C4775A' }}>★</span>}
+          {entry.pinned && <span title="Épinglée"><IconPin size={13} /></span>}
+          {entry.favorite && <span title="Favori" style={{ color: 'var(--accent)' }}><IconStar size={13} filled /></span>}
           {entry.draft && <span className="entry-draft-badge">Brouillon</span>}
         </div>
       </div>

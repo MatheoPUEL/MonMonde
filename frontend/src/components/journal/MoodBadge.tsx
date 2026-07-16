@@ -1,4 +1,5 @@
-import { Mood, MOOD_EMOJIS, MOOD_LABELS } from '../../api/journal'
+import { Mood, MOOD_LABELS } from '../../api/journal'
+import { MOOD_ICONS } from '../ui/icons'
 
 const MOOD_BG: Record<Mood, string> = {
   EXCELLENT: 'rgba(72,187,120,0.15)',
@@ -19,12 +20,13 @@ const MOOD_BORDER: Record<Mood, string> = {
 interface Props { mood: Mood }
 
 export function MoodBadge({ mood }: Props) {
+  const Icon = MOOD_ICONS[mood]
   return (
     <span
       className="mood-badge"
       style={{ background: MOOD_BG[mood], borderColor: MOOD_BORDER[mood] }}
     >
-      {MOOD_EMOJIS[mood]} {MOOD_LABELS[mood]}
+      <Icon size={13} /> {MOOD_LABELS[mood]}
     </span>
   )
 }

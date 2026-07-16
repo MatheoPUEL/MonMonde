@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { citationsApi, type CitationStats, SOURCE_TYPE_LABELS, SOURCE_TYPE_ICONS, type SourceType } from '../../api/citations'
+import { citationsApi, type CitationStats, SOURCE_TYPE_LABELS, type SourceType } from '../../api/citations'
+import { SOURCE_TYPE_ICONS } from '../ui/icons'
 
 export function CitationStatsPanel() {
   const [stats, setStats] = useState<CitationStats | null>(null)
@@ -21,7 +22,7 @@ export function CitationStatsPanel() {
 
   return (
     <div className="citations-container">
-      <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '2rem', marginBottom: '1.5rem', animation: 'fadeUp 0.4s ease both' }}>
+      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', marginBottom: '1.5rem', animation: 'fadeUp 0.4s ease both' }}>
         Statistiques
       </h1>
 
@@ -45,14 +46,17 @@ export function CitationStatsPanel() {
           <div className="citations-stats-section-title">Par type de source</div>
           {sourceTypeEntries
             .sort((a, b) => b[1] - a[1])
-            .map(([type, count]) => (
-              <div key={type} className="citations-stats-row">
-                <span className="citations-stats-row-label">
-                  {SOURCE_TYPE_ICONS[type]} {SOURCE_TYPE_LABELS[type]}
-                </span>
-                <span className="citations-stats-row-count">{count}</span>
-              </div>
-            ))}
+            .map(([type, count]) => {
+              const Icon = SOURCE_TYPE_ICONS[type]
+              return (
+                <div key={type} className="citations-stats-row">
+                  <span className="citations-stats-row-label">
+                    <Icon size={13} /> {SOURCE_TYPE_LABELS[type]}
+                  </span>
+                  <span className="citations-stats-row-count">{count}</span>
+                </div>
+              )
+            })}
         </div>
       )}
 

@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { journalApi, JournalEntry, Mood, ArchiveItem, EMPTY_DOC } from '../../api/journal'
+import { journalApi, JournalEntry, Mood, MOOD_LABELS, ArchiveItem, EMPTY_DOC } from '../../api/journal'
 import { EntryCard } from '../../components/journal/EntryCard'
 import { StatsPanel } from '../../components/journal/StatsPanel'
 import { ImportExportButtons } from '../../components/ui/ImportExportButtons'
+import { IconBarChart, IconPin, IconEdit, IconClose, IconJournal } from '../../components/ui/icons'
 
-const MOODS: { value: Mood; label: string; emoji: string }[] = [
-  { value: 'EXCELLENT', label: 'Excellent', emoji: '😄' },
-  { value: 'GOOD', label: 'Bon', emoji: '🙂' },
-  { value: 'NEUTRAL', label: 'Neutre', emoji: '😐' },
-  { value: 'BAD', label: 'Mauvais', emoji: '😔' },
-  { value: 'VERY_BAD', label: 'Très mauvais', emoji: '😞' },
-]
+const MOODS: Mood[] = ['EXCELLENT', 'GOOD', 'NEUTRAL', 'BAD', 'VERY_BAD']
 
 const MONTH_NAMES = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
 
@@ -100,7 +95,7 @@ export function JournalList() {
               journalApi.getEntries().then(d => { setEntries(d.entries); setTotal(d.total) }).catch(() => {})
             }} />
             <button className="btn btn-ghost" style={{ width: 'auto' }} onClick={() => setShowStats(s => !s)}>
-              📊 Stats
+              <IconBarChart size={14} /> Stats
             </button>
             <button className="btn btn-primary" style={{ width: 'auto' }} onClick={handleNew}>+ Nouvelle entrée</button>
           </div>
@@ -125,7 +120,7 @@ export function JournalList() {
             >
               <option value="">Toutes les humeurs</option>
               {MOODS.map(m => (
-                <option key={m.value} value={m.value}>{m.emoji} {m.label}</option>
+                <option key={m} value={m}>{MOOD_LABELS[m]}</option>
               ))}
             </select>
             <button
@@ -135,11 +130,11 @@ export function JournalList() {
             <button
               className={`filter-toggle${pinned ? ' filter-toggle--active' : ''}`}
               onClick={() => setPinned(p => !p)}
-            >📌 Épinglées</button>
+            ><IconPin size={12} /> Épinglées</button>
             <button
               className={`filter-toggle${draft ? ' filter-toggle--active' : ''}`}
               onClick={() => setDraft(d => !d)}
-            >✏ Brouillons</button>
+            ><IconEdit size={12} /> Brouillons</button>
             <input
               type="date"
               className="input-field journal-date-input"
@@ -155,7 +150,7 @@ export function JournalList() {
               title="Jusqu'au"
             />
             {hasFilters && (
-              <button className="btn btn-ghost btn-sm" onClick={clearFilters}>✕ Réinitialiser</button>
+              <button className="btn btn-ghost btn-sm" onClick={clearFilters}><IconClose size={11} /> Réinitialiser</button>
             )}
           </div>
         </div>
@@ -164,7 +159,7 @@ export function JournalList() {
           <div className="reading-loading"><div className="loading-spinner" /></div>
         ) : entries.length === 0 ? (
           <div className="reading-empty">
-            <div className="reading-empty-icon">📓</div>
+            <div className="reading-empty-icon"><IconJournal size={40} /></div>
             <p>
               {search || hasFilters
                 ? 'Aucune entrée ne correspond à ces filtres.'

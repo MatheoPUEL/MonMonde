@@ -81,14 +81,6 @@ export const STATUS_LABELS: Record<ReadingStatus, string> = {
   ABANDONED: 'Abandonné',
 }
 
-export const STATUS_COLORS: Record<ReadingStatus, string> = {
-  WISHLIST: '#A89890',
-  TO_READ: '#7A9E7E',
-  READING: '#C4775A',
-  FINISHED: '#5A8AC4',
-  ABANDONED: '#C4A45A',
-}
-
 export type BookInput = Partial<Omit<Book, 'author'>> & { title: string; authorName: string; tags?: string[] }
 
 export const readingApi = {
@@ -163,6 +155,15 @@ export const readingApi = {
     apiClient<{ ok: boolean }>(`/api/reading/books/${bookId}/notes/${noteId}`, { method: 'DELETE' }),
 }
 
+export interface OLAuthorCandidate {
+  olid: string
+  name: string
+  birthDate?: string
+  deathDate?: string
+  workCount?: number
+  topWork?: string
+}
+
 export const authorsApi = {
   getAll: (params?: { search?: string }) => {
     const q = new URLSearchParams()
@@ -180,8 +181,12 @@ export const authorsApi = {
       body: JSON.stringify(data),
     }),
 
-  enrich: (id: string) =>
+  getEnrichCandidates: (id: string) =>
+    apiClient<{ candidates: OLAuthorCandidate[] }>(`/api/reading/authors/${id}/enrich/candidates`),
+
+  enrich: (id: string, olid: string) =>
     apiClient<{ author: Author }>(`/api/reading/authors/${id}/enrich`, {
       method: 'POST',
+      body: JSON.stringify({ olid }),
     }),
 }

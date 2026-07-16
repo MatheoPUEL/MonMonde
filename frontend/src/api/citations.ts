@@ -1,8 +1,9 @@
 import { apiClient } from './client'
 import type { Author } from './reading'
+import type { Artist } from './art'
 
 export type SourceType =
-  | 'BOOK' | 'ARTICLE' | 'INTERNET' | 'PODCAST'
+  | 'BOOK' | 'ARTWORK' | 'ARTICLE' | 'INTERNET' | 'PODCAST'
   | 'FILM' | 'SERIES' | 'VIDEO' | 'PERSON' | 'OTHER'
 
 export interface CitationTag {
@@ -17,6 +18,13 @@ export interface CitationBook {
   coverUrl?: string
 }
 
+export interface CitationArtwork {
+  id: string
+  title: string
+  artist: Artist
+  coverUrl?: string
+}
+
 export interface Citation {
   id: string
   userId: string
@@ -26,6 +34,8 @@ export interface Citation {
   source?: string
   bookId?: string
   book?: CitationBook | null
+  artworkId?: string
+  artwork?: CitationArtwork | null
   page?: number
   chapter?: string
   comment?: string
@@ -52,6 +62,7 @@ export type CitationInput = {
   sourceType?: SourceType
   source?: string
   bookId?: string | null
+  artworkId?: string | null
   page?: number | null
   chapter?: string
   comment?: string
@@ -62,6 +73,7 @@ export type CitationInput = {
 
 export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
   BOOK: 'Livre',
+  ARTWORK: "Œuvre d'art",
   ARTICLE: 'Article',
   INTERNET: 'Internet',
   PODCAST: 'Podcast',
@@ -70,18 +82,6 @@ export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
   VIDEO: 'Vidéo',
   PERSON: 'Personne',
   OTHER: 'Autre',
-}
-
-export const SOURCE_TYPE_ICONS: Record<SourceType, string> = {
-  BOOK: '📚',
-  ARTICLE: '📰',
-  INTERNET: '🌐',
-  PODCAST: '🎙️',
-  FILM: '🎬',
-  SERIES: '📺',
-  VIDEO: '▶️',
-  PERSON: '🧑',
-  OTHER: '💬',
 }
 
 export const PRESET_COLORS = [
@@ -96,6 +96,7 @@ export const citationsApi = {
     favorite?: boolean
     tag?: string
     bookId?: string
+    artworkId?: string
   }) => {
     const q = new URLSearchParams()
     if (params?.search) q.set('search', params.search)
@@ -103,6 +104,7 @@ export const citationsApi = {
     if (params?.favorite) q.set('favorite', 'true')
     if (params?.tag) q.set('tag', params.tag)
     if (params?.bookId) q.set('bookId', params.bookId)
+    if (params?.artworkId) q.set('artworkId', params.artworkId)
     const qs = q.toString()
     return apiClient<{ citations: Citation[]; total: number }>(
       `/api/citations${qs ? `?${qs}` : ''}`
@@ -141,5 +143,10 @@ export const citationsApi = {
   getByBook: (bookId: string) =>
     apiClient<{ citations: Citation[]; total: number }>(
       `/api/reading/books/${bookId}/citations`
+    ),
+
+  getByArtwork: (artworkId: string) =>
+    apiClient<{ citations: Citation[]; total: number }>(
+      `/api/art/artworks/${artworkId}/citations`
     ),
 }

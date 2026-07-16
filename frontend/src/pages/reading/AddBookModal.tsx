@@ -4,6 +4,8 @@ import { GlassCard } from '../../components/ui/GlassCard'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { AuthorAutocomplete } from '../../components/reading/AuthorAutocomplete'
+import { bookInitials } from '../../components/reading/bookInitials'
+import { IconClose, IconChevronLeft } from '../../components/ui/icons'
 
 interface Props {
   onClose: () => void
@@ -110,7 +112,7 @@ export function AddBookModal({ onClose, onAdded }: Props) {
       <GlassCard className="modal-card">
         <div className="modal-header">
           <h2 className="modal-title">Ajouter un livre</h2>
-          <button className="modal-close" onClick={handleClose}>×</button>
+          <button className="modal-close" onClick={handleClose}><IconClose size={16} /></button>
         </div>
 
         {!manual ? (
@@ -130,7 +132,7 @@ export function AddBookModal({ onClose, onAdded }: Props) {
                 {results.map(r => (
                   <div key={r.googleBooksId} className="search-result-item" onClick={() => fillFromResult(r)}>
                     <div className="search-result-cover">
-                      {r.coverUrl ? <img src={r.coverUrl} alt={r.title} /> : '📚'}
+                      {r.coverUrl ? <img src={r.coverUrl} alt={r.title} /> : bookInitials(r.title)}
                     </div>
                     <div className="search-result-info">
                       <div className="search-result-title">{r.title}</div>
@@ -227,7 +229,7 @@ export function AddBookModal({ onClose, onAdded }: Props) {
             </label>
 
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <Button type="button" variant="ghost" className="btn-sm" onClick={() => setManual(false)}>← Retour</Button>
+              <Button type="button" variant="ghost" className="btn-sm" onClick={() => setManual(false)}><IconChevronLeft size={12} /> Retour</Button>
               <Button type="submit" loading={loading} className="btn-sm">Ajouter</Button>
             </div>
           </form>

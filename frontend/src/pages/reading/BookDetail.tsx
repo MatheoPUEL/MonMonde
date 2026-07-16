@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { readingApi, Book, BookNote, ReadingStatus, STATUS_LABELS } from '../../api/reading'
 import { citationsApi, type Citation } from '../../api/citations'
-import { GlassCard } from '../../components/ui/GlassCard'
 import { StarRating } from '../../components/reading/StarRating'
 import { ProgressUpdateForm } from '../../components/reading/ProgressUpdateForm'
 import { NoteCard } from '../../components/reading/NoteCard'
@@ -12,6 +11,8 @@ import { CitationCard } from '../../components/citations/CitationCard'
 import { CitationForm } from '../../components/citations/CitationForm'
 import { EditBookModal } from './EditBookModal'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
+import { bookInitials } from '../../components/reading/bookInitials'
+import { IconChevronLeft, IconEdit, IconStar, IconRedo, IconTrash, IconClose } from '../../components/ui/icons'
 
 export function BookDetail() {
   const { id } = useParams<{ id: string }>()
@@ -93,14 +94,18 @@ export function BookDetail() {
 
   return (
     <div className="book-detail">
-      <button className="book-detail-back" onClick={() => navigate('/reading')}>← Bibliothèque</button>
+      <button className="book-detail-back" onClick={() => navigate('/reading')}>
+        <IconChevronLeft size={14} /> Bibliothèque
+      </button>
 
       <div className="book-detail-layout">
         {/* Left column */}
         <div className="book-detail-left">
           <div className="book-detail-cover-wrap">
             <div className="book-detail-cover">
-              {book.coverUrl ? <img src={book.coverUrl} alt={book.title} /> : '📚'}
+              {book.coverUrl ? <img src={book.coverUrl} alt={book.title} /> : (
+                <span className="book-cover-initials book-cover-initials--lg">{bookInitials(book.title)}</span>
+              )}
             </div>
           </div>
 
@@ -137,20 +142,20 @@ export function BookDetail() {
               className="btn-side"
               onClick={() => setShowEditModal(true)}
             >
-              ✏ Modifier
+              <IconEdit size={14} /> Modifier
             </button>
             <button
               className={`btn-side ${book.favorite ? 'btn-side--active' : ''}`}
               onClick={() => update({ favorite: !book.favorite })}
             >
-              {book.favorite ? '★' : '☆'} Favori
+              <IconStar size={14} filled={book.favorite} /> Favori
             </button>
             <div className="reread-row">
               <button
                 className="btn-side reread-btn"
                 onClick={() => update({ rereadCount: book.rereadCount + 1 })}
               >
-                🔁 Relecture ({book.rereadCount})
+                <IconRedo size={14} /> Relecture ({book.rereadCount})
               </button>
               {book.rereadCount > 0 && (
                 <button
@@ -158,16 +163,15 @@ export function BookDetail() {
                   onClick={() => update({ rereadCount: 0 })}
                   title="Remettre à zéro"
                 >
-                  ×
+                  <IconClose size={12} />
                 </button>
               )}
             </div>
             <button
-              className="btn-side"
-              style={{ color: '#C44B4B' }}
+              className="btn-side btn-side--danger"
               onClick={handleDelete}
             >
-              🗑 Supprimer
+              <IconTrash size={14} /> Supprimer
             </button>
           </div>
         </div>

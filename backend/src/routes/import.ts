@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
-import { RoutineType, SourceType, ReadingStatus, Mood, TargetPeriod } from '@prisma/client'
+import { RoutineType, SourceType, ReadingStatus, Mood, TargetPeriod, ArtworkMediaType } from '@prisma/client'
 
 const router = Router()
 router.use(requireAuth)
@@ -246,6 +246,90 @@ router.post('/citations', async (req, res, next) => {
     })
 
     res.json({ imported, skipped, total: citations.length })
+  } catch (err) { next(err) }
+})
+
+router.post('/art', async (req, res, next) => {
+  try {
+    const userId = req.user!.id
+    const body = req.body as { version?: string; artworks?: Record<string, unknown>[] }
+
+    if (!validateVersion(body as Record<string, unknown>, res)) return
+    const artworks = body.artworks ?? []
+
+    let imported = 0
+    let skipped = 0
+
+    await prisma.$transaction(async (tx) => {
+      for (const artwork of artworks) {
+        const artistData = artwork.artist as Record<string, unknown> | undefined
+        const artistName = (artistData?.name as string) || 'Inconnu'
+        const artworkArtist = await tx.artist.upsert({
+          where: { userId_name: { userId, name: artistName } },
+          create: { userId, name: artistName },
+          update: {},
+        })
+
+        const existing = await tx.artwork.findFirst({
+          where: { userId, title: artwork.title as string, artistId: artworkArtist.id },
+        })
+
+        if (existing) { skipped++; continue }
+
+        const tags = (artwork.tags as string[]) ?? []
+        const notes = (artwork.notes as Record<string, unknown>[]) ?? []
+        const media = (artwork.media as Record<string, unknown>[]) ?? []
+
+        await tx.artwork.create({
+          data: {
+            userId,
+            title: artwork.title as string,
+            artistId: artworkArtist.id,
+            dateDisplay: (artwork.dateDisplay as string) ?? null,
+            year: artwork.year != null ? Number(artwork.year) : null,
+            century: artwork.century != null ? Number(artwork.century) : null,
+            period: (artwork.period as string) ?? null,
+            movements: (artwork.movements as string[]) ?? [],
+            currents: (artwork.currents as string[]) ?? [],
+            themes: (artwork.themes as string[]) ?? [],
+            technique: (artwork.technique as string) ?? null,
+            medium: (artwork.medium as string) ?? null,
+            dimensions: (artwork.dimensions as string) ?? null,
+            country: (artwork.country as string) ?? null,
+            museum: (artwork.museum as string) ?? null,
+            description: (artwork.description as string) ?? null,
+            review: (artwork.review as string) ?? null,
+            coverUrl: (artwork.coverUrl as string) ?? null,
+            coverType: (artwork.coverType as string) ?? null,
+            sourceApi: (artwork.sourceApi as string) ?? null,
+            sourceId: (artwork.sourceId as string) ?? null,
+            sourceUrl: (artwork.sourceUrl as string) ?? null,
+            favorite: (artwork.favorite as boolean) ?? false,
+            tags: { create: tags.filter(Boolean).map(name => ({ name })) },
+            notes: {
+              create: notes.map(n => ({
+                title: n.title as string,
+                content: n.content as string,
+              })),
+            },
+            media: {
+              create: media.map(m => ({
+                type: (m.type as ArtworkMediaType) ?? 'OTHER',
+                url: m.url as string,
+                filename: m.filename as string,
+                originalName: (m.originalName as string) ?? null,
+                mimeType: (m.mimeType as string) ?? null,
+                size: m.size != null ? Number(m.size) : null,
+                caption: (m.caption as string) ?? null,
+              })),
+            },
+          },
+        })
+        imported++
+      }
+    })
+
+    res.json({ imported, skipped, total: artworks.length })
   } catch (err) { next(err) }
 })
 

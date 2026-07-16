@@ -22,6 +22,8 @@ model User {
   journalEntries JournalEntry[]
   routines       Routine[]
   citations      Citation[]
+  artworks       Artwork[]
+  artists        Artist[]
 }
 
 model Shortcut {
@@ -241,6 +243,7 @@ model RoutineCompletion {
 
 enum SourceType {
   BOOK
+  ARTWORK
   ARTICLE
   INTERNET
   PODCAST
@@ -263,6 +266,8 @@ model Citation {
 
   bookId     String?
   book       Book?      @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  artworkId  String?
+  artwork    Artwork?   @relation(fields: [artworkId], references: [id], onDelete: SetNull)
   page       Int?
   chapter    String?
 
@@ -280,6 +285,7 @@ model Citation {
   @@index([userId, favorite])
   @@index([userId, sourceType])
   @@index([bookId])
+  @@index([artworkId])
   @@index([userId, createdAt])
 }
 
@@ -302,4 +308,121 @@ model AuthorEnrichmentCache {
   deathDate DateTime?
   photoPath String?
   cachedAt  DateTime  @default(now())
+}
+
+enum ArtworkMediaType {
+  IMAGE
+  PDF
+  VIDEO
+  AUDIO
+  OTHER
+}
+
+model Artist {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  bio         String?
+  birthDate   DateTime?
+  deathDate   DateTime?
+  nationality String?
+  photoUrl    String?
+  wikidataId  String?
+
+  artworks    Artwork[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Artwork {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  artistId    String
+  artist      Artist   @relation(fields: [artistId], references: [id])
+
+  dateDisplay String?
+  year        Int?
+  century     Int?
+  period      String?
+  movements   String[]
+  currents    String[]
+  themes      String[]
+  technique   String?
+  medium      String?
+  dimensions  String?
+  country     String?
+  museum      String?
+
+  description String?
+  review      String?
+
+  coverUrl    String?
+  coverType   String?
+  sourceApi   String?
+  sourceId    String?
+  sourceUrl   String?
+
+  favorite    Boolean  @default(false)
+  tags        ArtworkTag[]
+  notes       ArtworkNote[]
+  media       ArtworkMedia[]
+  citations   Citation[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, favorite])
+  @@index([artistId])
+}
+
+model ArtworkTag {
+  id        String  @id @default(cuid())
+  name      String
+  artworkId String
+  artwork   Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  @@unique([artworkId, name])
+  @@index([artworkId])
+}
+
+model ArtworkNote {
+  id        String   @id @default(cuid())
+  artworkId String
+  artwork   Artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  title     String
+  content   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([artworkId])
+}
+
+model ArtworkMedia {
+  id           String           @id @default(cuid())
+  artworkId    String
+  artwork      Artwork          @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  type         ArtworkMediaType
+  url          String
+  filename     String
+  originalName String?
+  mimeType     String?
+  size         Int?
+  caption      String?
+
+  createdAt    DateTime         @default(now())
+
+  @@index([artworkId])
 }

@@ -109,6 +109,54 @@ function mapCitation(c: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapArtwork(a: any) {
+  return {
+    id: a.id,
+    title: a.title,
+    artist: a.artist,
+    dateDisplay: a.dateDisplay,
+    year: a.year,
+    century: a.century,
+    period: a.period,
+    movements: a.movements,
+    currents: a.currents,
+    themes: a.themes,
+    technique: a.technique,
+    medium: a.medium,
+    dimensions: a.dimensions,
+    country: a.country,
+    museum: a.museum,
+    description: a.description,
+    review: a.review,
+    coverUrl: a.coverUrl,
+    coverType: a.coverType,
+    sourceApi: a.sourceApi,
+    sourceId: a.sourceId,
+    sourceUrl: a.sourceUrl,
+    favorite: a.favorite,
+    tags: a.tags.map((t: any) => t.name),
+    notes: a.notes.map((n: any) => ({
+      id: n.id,
+      title: n.title,
+      content: n.content,
+      createdAt: n.createdAt.toISOString(),
+      updatedAt: n.updatedAt.toISOString(),
+    })),
+    media: a.media.map((m: any) => ({
+      type: m.type,
+      url: m.url,
+      filename: m.filename,
+      originalName: m.originalName,
+      mimeType: m.mimeType,
+      size: m.size,
+      caption: m.caption,
+    })),
+    createdAt: a.createdAt.toISOString(),
+    updatedAt: a.updatedAt.toISOString(),
+  }
+}
+
 const router = Router()
 router.use(requireAuth)
 
@@ -184,15 +232,34 @@ router.get('/citations', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+router.get('/art', async (req, res, next) => {
+  try {
+    const userId = req.user!.id
+    const artworks = await prisma.artwork.findMany({
+      where: { userId },
+      include: { tags: true, notes: true, media: true, artist: true },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    res.json({
+      exportedAt: now(),
+      version: '1',
+      module: 'art',
+      artworks: artworks.map(mapArtwork),
+    })
+  } catch (err) { next(err) }
+})
+
 router.get('/all', async (req, res, next) => {
   try {
     const userId = req.user!.id
 
-    const [entries, books, routines, citations] = await Promise.all([
+    const [entries, books, routines, citations, artworks] = await Promise.all([
       prisma.journalEntry.findMany({ where: { userId }, include: { tags: true }, orderBy: { createdAt: 'asc' } }),
       prisma.book.findMany({ where: { userId }, include: { tags: true, notes: true }, orderBy: { createdAt: 'asc' } }),
       prisma.routine.findMany({ where: { userId }, include: { completions: { orderBy: { date: 'asc' } } }, orderBy: { createdAt: 'asc' } }),
       prisma.citation.findMany({ where: { userId }, include: { tags: true }, orderBy: { createdAt: 'asc' } }),
+      prisma.artwork.findMany({ where: { userId }, include: { tags: true, notes: true, media: true, artist: true }, orderBy: { createdAt: 'asc' } }),
     ])
 
     res.json({
@@ -203,6 +270,7 @@ router.get('/all', async (req, res, next) => {
       reading: { books: books.map(mapBook) },
       routines: { routines: routines.map(mapRoutine) },
       citations: { citations: citations.map(mapCitation) },
+      art: { artworks: artworks.map(mapArtwork) },
     })
   } catch (err) { next(err) }
 })

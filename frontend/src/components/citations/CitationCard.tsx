@@ -1,5 +1,6 @@
 import type { Citation } from '../../api/citations'
-import { SOURCE_TYPE_LABELS, SOURCE_TYPE_ICONS } from '../../api/citations'
+import { SOURCE_TYPE_LABELS } from '../../api/citations'
+import { SOURCE_TYPE_ICONS, IconStar } from '../ui/icons'
 
 interface CitationCardProps {
   citation: Citation
@@ -10,6 +11,7 @@ interface CitationCardProps {
 export function CitationCard({ citation, onClick, onFavoriteToggle }: CitationCardProps) {
   const visibleTags = citation.tags.slice(0, 3)
   const extraCount = citation.tags.length - visibleTags.length
+  const SourceIcon = SOURCE_TYPE_ICONS[citation.sourceType]
 
   return (
     <div className="citation-card" onClick={onClick}>
@@ -24,7 +26,8 @@ export function CitationCard({ citation, onClick, onFavoriteToggle }: CitationCa
               <span className="citation-card-author">{citation.author}</span>
             )}
             <span className="citation-source-badge">
-              {SOURCE_TYPE_ICONS[citation.sourceType]}&nbsp;{SOURCE_TYPE_LABELS[citation.sourceType]}
+              <SourceIcon size={12} />
+              {SOURCE_TYPE_LABELS[citation.sourceType]}
             </span>
             {citation.source && (
               <span className="citation-card-source">{citation.source}</span>
@@ -42,7 +45,7 @@ export function CitationCard({ citation, onClick, onFavoriteToggle }: CitationCa
               onClick={e => { e.stopPropagation(); onFavoriteToggle(citation.id) }}
               title={citation.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             >
-              {citation.favorite ? '★' : '☆'}
+              <IconStar size={12} filled={citation.favorite} />
             </button>
           </div>
         </div>

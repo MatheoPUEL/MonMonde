@@ -1,0 +1,208 @@
+/* Œuvres d'art — réutilise au maximum les classes de reading.css/globals.css.
+   Ne définit que ce qui est spécifique aux œuvres (vignettes carrées, médias). */
+
+.chip--sm { padding: 3px 9px; font-size: 10.5px; }
+
+/* ArtworkCard */
+.artwork-card {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform var(--transition);
+}
+
+.artwork-card:hover { transform: translateY(-4px); }
+
+.artwork-cover-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: repeating-linear-gradient(135deg, var(--bg-surface-2), var(--bg-surface-2) 8px, var(--bg-surface-3) 8px, var(--bg-surface-3) 16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.artwork-cover-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.artwork-cover-fav {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.artwork-cover-initials {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.artwork-cover-initials--sm { font-size: 14px; }
+
+.artwork-card-info { display: flex; flex-direction: column; gap: 5px; }
+
+.artwork-card-title {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.artwork-card-artist {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.artwork-card-footer { display: flex; align-items: center; justify-content: flex-start; gap: 0.4rem; flex-wrap: wrap; }
+
+/* ArtworkRow */
+.artwork-row {
+  cursor: pointer;
+  padding: 12px 4px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 8px;
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+
+.artwork-row:hover { background: var(--bg-surface-2); }
+
+.artwork-row-cover {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: repeating-linear-gradient(135deg, var(--bg-surface-2), var(--bg-surface-2) 6px, var(--bg-surface-3) 6px, var(--bg-surface-3) 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artwork-row-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.artwork-row-info { flex: 1; min-width: 0; }
+
+.artwork-row-title {
+  font-family: var(--font-serif);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artwork-row-artist { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 0.25rem; display: block; }
+.artwork-row-meta { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+
+/* Detail — grille des métadonnées (période, siècle, support, pays…) */
+.artwork-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px 20px;
+  font-size: 13.5px;
+  color: var(--text-primary);
+}
+
+.artwork-meta-label {
+  display: block;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+/* MediaGallery */
+.media-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 14px;
+}
+
+.media-item { position: relative; display: flex; flex-direction: column; gap: 5px; }
+
+.media-item-thumb {
+  aspect-ratio: 1/1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.media-item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-item-thumb--file { color: var(--text-muted); }
+
+.media-item-name {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.media-item-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-glass-strong);
+  color: var(--danger);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.media-item:hover .media-item-remove { opacity: 1; }
+
+.media-item-add {
+  aspect-ratio: 1/1;
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--border-strong);
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.media-item-add:hover { border-color: var(--accent); color: var(--accent); }

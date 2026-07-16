@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { journalApi, JournalEntry, JournalStats, MOOD_EMOJIS } from '../../api/journal'
+import { useNavigate, Link } from 'react-router-dom'
+import { journalApi, JournalEntry, JournalStats } from '../../api/journal'
+import { Button } from '../ui/Button'
+import { IconJournal, IconFlame, MOOD_ICONS } from '../ui/icons'
 
 function relativeDate(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -16,6 +18,7 @@ export function WidgetJournal() {
   const [entry, setEntry] = useState<JournalEntry | null>(null)
   const [stats, setStats] = useState<JournalStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     Promise.all([
@@ -30,12 +33,15 @@ export function WidgetJournal() {
       .finally(() => setLoading(false))
   }, [])
 
+  const MoodIcon = entry?.mood ? MOOD_ICONS[entry.mood] : null
+  const snippet = entry?.contentText.trim().slice(0, 220)
+
   return (
     <div className="dashboard-widget widget-journal">
       <div className="widget-journal-header">
-        <span className="dashboard-widget-title">📓 Journal</span>
+        <span className="dashboard-widget-title"><IconJournal size={14} />Journal</span>
         {stats && stats.currentStreak > 0 && (
-          <span className="widget-streak-badge">🔥 {stats.currentStreak} j</span>
+          <span className="widget-streak-badge"><IconFlame size={12} /> {stats.currentStreak} j</span>
         )}
       </div>
       {loading ? (
@@ -45,17 +51,18 @@ export function WidgetJournal() {
       ) : entry ? (
         <>
           <div className="widget-journal-entry">
-            {entry.mood && (
-              <span className="widget-journal-mood">{MOOD_EMOJIS[entry.mood]}</span>
+            {MoodIcon && (
+              <span className="widget-journal-mood"><MoodIcon size={16} /></span>
             )}
             <span className="widget-journal-entry-title">
               {entry.title || 'Sans titre'}
             </span>
             <span className="widget-journal-date">{relativeDate(entry.createdAt)}</span>
           </div>
-          <Link to={`/journal/${entry.id}`} className="dashboard-widget-link">
-            Lire l'entrée →
-          </Link>
+          {snippet && <p className="widget-journal-snippet">{snippet}</p>}
+          <Button variant="ghost" onClick={() => navigate(`/journal/${entry.id}`)}>
+            Continuer d'écrire
+          </Button>
         </>
       ) : (
         <div className="widget-empty">

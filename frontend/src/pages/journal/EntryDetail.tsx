@@ -4,6 +4,7 @@ import { journalApi, JournalEntry, Mood } from '../../api/journal'
 import { RichEditor } from '../../components/ui/RichEditor'
 import { MoodPicker } from '../../components/journal/MoodPicker'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
+import { IconClose, IconChevronLeft, IconExpand, IconTrash } from '../../components/ui/icons'
 
 export function EntryDetail() {
   const { id } = useParams<{ id: string }>()
@@ -120,8 +121,8 @@ export function EntryDetail() {
     <div className={`entry-detail${focusMode ? ' entry-detail--focus' : ''}`}>
       <div className="entry-detail-topbar">
         {focusMode
-          ? <button className="book-detail-back" onClick={() => setFocusMode(false)}>✕ Quitter le focus</button>
-          : <button className="book-detail-back" onClick={() => navigate('/journal')}>← Journal</button>
+          ? <button className="book-detail-back" onClick={() => setFocusMode(false)}><IconClose size={14} /> Quitter le focus</button>
+          : <button className="book-detail-back" onClick={() => navigate('/journal')}><IconChevronLeft size={14} /> Journal</button>
         }
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span className={`save-indicator save-indicator--${saveStatus}`}>
@@ -129,7 +130,7 @@ export function EntryDetail() {
           </span>
           {!focusMode && (
             <button className="focus-mode-btn" onClick={() => setFocusMode(true)} title="Mode focus (plein écran)">
-              ⛶
+              <IconExpand size={15} />
             </button>
           )}
         </div>
@@ -186,7 +187,7 @@ export function EntryDetail() {
                 onChange={e => handleToggle('favorite', e.target.checked)}
                 style={{ accentColor: 'var(--accent)' }}
               />
-              ★ Favori
+              Favori
             </label>
             <label className="owned-toggle">
               <input
@@ -195,7 +196,7 @@ export function EntryDetail() {
                 onChange={e => handleToggle('pinned', e.target.checked)}
                 style={{ accentColor: 'var(--accent)' }}
               />
-              📌 Épinglée
+              Épinglée
             </label>
             <label className="owned-toggle">
               <input
@@ -204,7 +205,7 @@ export function EntryDetail() {
                 onChange={e => handleToggle('draft', e.target.checked)}
                 style={{ accentColor: 'var(--accent)' }}
               />
-              ✏ Brouillon
+              Brouillon
             </label>
           </div>
 
@@ -219,11 +220,11 @@ export function EntryDetail() {
           </div>
 
           <button
-            className="btn-side"
-            style={{ color: '#C44B4B', marginTop: '0.5rem' }}
+            className="btn-side btn-side--danger"
+            style={{ marginTop: '0.5rem' }}
             onClick={handleDelete}
           >
-            🗑 Supprimer
+            <IconTrash size={14} /> Supprimer
           </button>
         </div>
       </div>

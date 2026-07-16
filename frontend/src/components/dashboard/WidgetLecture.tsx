@@ -1,64 +1,68 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { readingApi, Book } from '../../api/reading'
 import { ProgressBar } from '../reading/ProgressBar'
+import { bookInitials } from '../reading/bookInitials'
+import { Button } from '../ui/Button'
+import { IconReading } from '../ui/icons'
+
+const MAX_SHOWN = 3
 
 export function WidgetLecture() {
-  const [book, setBook] = useState<Book | null>(null)
-  const [totalReading, setTotalReading] = useState(0)
+  const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     readingApi.getBooks({ status: 'READING' })
-      .then(d => {
-        setBook(d.books[0] ?? null)
-        setTotalReading(d.books.length)
-      })
+      .then(d => setBooks(d.books))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
+  const shown = books.slice(0, MAX_SHOWN)
+  const extra = books.length - shown.length
+
   return (
     <div className="dashboard-widget widget-reading">
-      <span className="dashboard-widget-title">📚 Lecture en cours</span>
+      <span className="dashboard-widget-title">
+        <IconReading size={14} />Lecture{books.length > 1 ? 's' : ''} en cours
+      </span>
       {loading ? (
         <div className="widget-loading-center">
           <div className="loading-spinner" />
         </div>
-      ) : book ? (
+      ) : shown.length > 0 ? (
         <>
-          <div className="widget-book-layout">
-            <div className="widget-book-cover">
-              {book.coverUrl
-                ? <img src={book.coverUrl} alt={book.title} />
-                : '📖'
-              }
-            </div>
-            <div className="widget-book-info">
-              <Link to={`/reading/books/${book.id}`} className="widget-book-title">
-                {book.title}
-              </Link>
-              <span className="widget-book-author">{book.author.name}</span>
-              {book.currentPage != null && book.pageCount != null ? (
-                <>
-                  <ProgressBar currentPage={book.currentPage} pageCount={book.pageCount} />
-                  <span className="widget-book-noprogress">
-                    {book.pageCount - book.currentPage} page{book.pageCount - book.currentPage > 1 ? 's' : ''} restantes
-                  </span>
-                </>
-              ) : (
-                <span className="widget-book-noprogress">Progression non suivie</span>
-              )}
-            </div>
+          <div className="widget-reading-list">
+            {shown.map(book => (
+              <div
+                key={book.id}
+                className="widget-reading-item"
+                onClick={() => navigate(`/reading/${book.id}`)}
+              >
+                <div className="widget-reading-item-cover">
+                  {book.coverUrl
+                    ? <img src={book.coverUrl} alt={book.title} />
+                    : bookInitials(book.title)
+                  }
+                </div>
+                <div className="widget-reading-item-info">
+                  <span className="widget-reading-item-title">{book.title}</span>
+                  <span className="widget-reading-item-author">{book.author.name}</span>
+                  {book.currentPage != null && book.pageCount != null ? (
+                    <ProgressBar currentPage={book.currentPage} pageCount={book.pageCount} />
+                  ) : (
+                    <span className="widget-book-noprogress">Progression non suivie</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-          {totalReading > 1 && (
-            <span className="widget-book-more">
-              et {totalReading - 1} autre{totalReading > 2 ? 's' : ''} en cours
-            </span>
+          {extra > 0 && (
+            <span className="widget-reading-more">et {extra} autre{extra > 1 ? 's' : ''} en cours</span>
           )}
-          <Link to="/reading" className="dashboard-widget-link">
-            Voir la bibliothèque →
-          </Link>
+          <Button onClick={() => navigate('/reading')}>Continuer la lecture</Button>
         </>
       ) : (
         <div className="widget-empty">

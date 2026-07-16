@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { citationsApi, type Citation, SOURCE_TYPE_LABELS, SOURCE_TYPE_ICONS } from '../../api/citations'
+import { citationsApi, type Citation, SOURCE_TYPE_LABELS } from '../../api/citations'
 import { CitationForm } from '../../components/citations/CitationForm'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
+import { SOURCE_TYPE_ICONS, IconStar, IconChevronLeft, IconChevronRight, IconReading } from '../../components/ui/icons'
 
 export function CitationDetail() {
   const { id } = useParams<{ id: string }>()
@@ -52,10 +53,12 @@ export function CitationDetail() {
     citation.page ? `p. ${citation.page}` : null,
   ].filter(Boolean).join(' · ')
 
+  const SourceIcon = SOURCE_TYPE_ICONS[citation.sourceType]
+
   return (
     <div className="citation-detail">
       <button className="citation-detail-back" onClick={() => navigate('/citations/list')}>
-        ← Citations
+        <IconChevronLeft size={14} /> Citations
       </button>
 
       <div className="citation-detail-quote" style={{ borderLeftColor: citation.color }}>
@@ -67,7 +70,7 @@ export function CitationDetail() {
           <span className="citation-detail-author">{citation.author}</span>
         )}
         <span className="citation-source-badge">
-          {SOURCE_TYPE_ICONS[citation.sourceType]}&nbsp;{SOURCE_TYPE_LABELS[citation.sourceType]}
+          <SourceIcon size={13} /> {SOURCE_TYPE_LABELS[citation.sourceType]}
         </span>
         {citation.source && (
           <span className="citation-detail-source-text">{citation.source}</span>
@@ -77,10 +80,10 @@ export function CitationDetail() {
         )}
         <button
           onClick={handleFavoriteToggle}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.25rem', color: citation.favorite ? '#E5A34A' : '#ccc' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: citation.favorite ? 'var(--accent)' : 'var(--text-muted)' }}
           title={citation.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
         >
-          {citation.favorite ? '★' : '☆'}
+          <IconStar size={18} filled={citation.favorite} />
         </button>
       </div>
 
@@ -106,25 +109,22 @@ export function CitationDetail() {
             <div className="citation-detail-book-cover">
               {citation.book.coverUrl
                 ? <img src={citation.book.coverUrl} alt={citation.book.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3 }} />
-                : '📚'}
+                : <IconReading size={16} />}
             </div>
             <div className="citation-detail-book-info">
               <div className="citation-detail-book-title">{citation.book.title}</div>
               <div className="citation-detail-book-author">{citation.book?.author?.name}</div>
             </div>
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>→</span>
+            <IconChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
           </Link>
         </div>
       )}
 
       <div className="citation-detail-actions">
-        <button className="btn btn-secondary" style={{ width: 'auto', padding: '0.6rem 1.25rem' }} onClick={() => setShowEdit(true)}>
+        <button className="btn btn-secondary" style={{ width: 'auto' }} onClick={() => setShowEdit(true)}>
           Modifier
         </button>
-        <button
-          onClick={handleDelete}
-          style={{ background: '#e56464', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', padding: '0.5rem 0.875rem', cursor: 'pointer', fontSize: '0.875rem' }}
-        >
+        <button className="btn-danger" onClick={handleDelete}>
           Supprimer
         </button>
       </div>

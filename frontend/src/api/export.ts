@@ -1,7 +1,7 @@
 // frontend/src/api/export.ts
 import { apiClient } from './client'
 
-const MODULES = ['journal', 'reading', 'routines', 'citations', 'all'] as const
+const MODULES = ['journal', 'reading', 'routines', 'citations', 'art', 'all'] as const
 type ExportModule = typeof MODULES[number]
 
 export async function exportModule(module: ExportModule): Promise<void> {

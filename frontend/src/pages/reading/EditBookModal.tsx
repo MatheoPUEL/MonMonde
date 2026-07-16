@@ -4,6 +4,7 @@ import { GlassCard } from '../../components/ui/GlassCard'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { AuthorAutocomplete } from '../../components/reading/AuthorAutocomplete'
+import { IconClose } from '../../components/ui/icons'
 
 interface Props {
   book: Book
@@ -99,7 +100,7 @@ export function EditBookModal({ book, onClose, onUpdated }: Props) {
       <GlassCard className="modal-card">
         <div className="modal-header">
           <h2 className="modal-title">Modifier le livre</h2>
-          <button className="modal-close" onClick={handleClose}>×</button>
+          <button className="modal-close" onClick={handleClose}><IconClose size={16} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="add-form">

@@ -7,6 +7,7 @@ import { AddBookModal } from './AddBookModal'
 import { Button } from '../../components/ui/Button'
 import { ImportExportButtons } from '../../components/ui/ImportExportButtons'
 import { AuthorAutocomplete } from '../../components/reading/AuthorAutocomplete'
+import { IconSearch, IconGrid, IconList, IconSort, IconReading, IconClose } from '../../components/ui/icons'
 
 type ViewMode = 'grid' | 'list'
 type SortKey = 'createdAt' | 'title' | 'rating' | 'finishedAt'
@@ -164,7 +165,7 @@ export function BookLibrary() {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <ImportExportButtons module="reading" onImportDone={fetchBooks} />
-          <Link to="/reading/authors" className="btn btn-ghost" style={{ width: 'auto', padding: '0.65rem 1.25rem' }}>
+          <Link to="/reading/authors" className="btn btn-ghost" style={{ width: 'auto' }}>
             Auteurs
           </Link>
           <Button onClick={() => setShowAddModal(true)} className="btn-add-book">
@@ -174,24 +175,27 @@ export function BookLibrary() {
       </header>
 
       <div className="reading-toolbar">
-        <input
-          className="input-field reading-search"
-          placeholder="Titre, auteur, ISBN..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+        <div className="reading-search-box">
+          <IconSearch size={15} />
+          <input
+            className="reading-search-input"
+            placeholder="Titre, auteur, ISBN..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
         <div className="reading-view-toggle">
-          <button className={`view-btn ${view === 'grid' ? 'view-btn--active' : ''}`} onClick={() => setViewMode('grid')} aria-label="Grille">⊞</button>
-          <button className={`view-btn ${view === 'list' ? 'view-btn--active' : ''}`} onClick={() => setViewMode('list')} aria-label="Liste">≡</button>
+          <button className={`view-btn ${view === 'grid' ? 'view-btn--active' : ''}`} onClick={() => setViewMode('grid')} aria-label="Grille"><IconGrid size={15} /></button>
+          <button className={`view-btn ${view === 'list' ? 'view-btn--active' : ''}`} onClick={() => setViewMode('list')} aria-label="Liste"><IconList size={15} /></button>
         </div>
         <div className="filters-btn-wrap">
           <button
             className={`btn btn-ghost ${filtersOpen ? 'view-btn--active' : ''}`}
-            style={{ width: 'auto', padding: '0.5rem 0.875rem', fontSize: '0.85rem' }}
+            style={{ width: 'auto' }}
             onClick={() => setFiltersOpen(o => !o)}
             aria-expanded={filtersOpen}
           >
-            ⊕ Filtres
+            <IconSort size={13} /> Filtres
           </button>
           {activeFilterCount > 0 && (
             <span className="filters-badge">{activeFilterCount}</span>
@@ -268,7 +272,7 @@ export function BookLibrary() {
               </select>
               {activeFilterCount > 0 && (
                 <button className="filters-reset-btn" onClick={resetFilters}>
-                  ✕ Réinitialiser
+                  <IconClose size={11} /> Réinitialiser
                 </button>
               )}
             </div>
@@ -298,7 +302,7 @@ export function BookLibrary() {
         <div className="reading-loading"><div className="loading-spinner" /></div>
       ) : displayedBooks.length === 0 ? (
         <div className="reading-empty">
-          <div className="reading-empty-icon">📚</div>
+          <div className="reading-empty-icon"><IconReading size={40} /></div>
           <p>{search || status || activeDataFilterCount > 0 ? 'Aucun livre trouvé.' : 'Ta bibliothèque est vide.'}</p>
           {!search && !status && activeDataFilterCount === 0 && (
             <Button onClick={() => setShowAddModal(true)} className="btn-add-book">

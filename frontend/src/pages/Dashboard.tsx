@@ -5,6 +5,8 @@ import { WidgetLecture } from '../components/dashboard/WidgetLecture'
 import { WidgetJournal } from '../components/dashboard/WidgetJournal'
 import { WidgetAujourdhui } from '../components/dashboard/WidgetAujourdhui'
 import { WidgetCitation } from '../components/dashboard/WidgetCitation'
+import { WidgetOeuvre } from '../components/dashboard/WidgetOeuvre'
+import { IconDownload } from '../components/ui/icons'
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -22,16 +24,10 @@ export function Dashboard() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1 className="dashboard-greeting">Bonjour, {firstName} 👋</h1>
-        <p className="dashboard-date">{capitalizedDate}</p>
-      </header>
-      <div className="dashboard-bento">
-        <WidgetLecture />
-        <WidgetJournal />
-        <WidgetAujourdhui />
-        <WidgetCitation />
-      </div>
-      <div className="dashboard-export">
+        <div>
+          <h1 className="dashboard-greeting">Bonjour, {firstName}</h1>
+          <p className="dashboard-date">{capitalizedDate}</p>
+        </div>
         <button
           className="btn btn-ghost"
           style={{ width: 'auto' }}
@@ -41,8 +37,15 @@ export function Dashboard() {
             try { await exportModule('all') } catch {} finally { setExporting(false) }
           }}
         >
-          {exporting ? '…' : '↓'} Exporter tout
+          {exporting ? '…' : <IconDownload size={14} />} Exporter tout
         </button>
+      </header>
+      <div className="dashboard-bento">
+        <WidgetLecture />
+        <WidgetOeuvre />
+        <WidgetCitation />
+        <WidgetJournal />
+        <WidgetAujourdhui />
       </div>
     </div>
   )

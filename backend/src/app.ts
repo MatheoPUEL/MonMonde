@@ -10,6 +10,7 @@ import readingRouter from './routes/reading'
 import journalRouter from './routes/journal'
 import routinesRouter from './routes/routines'
 import citationsRouter from './routes/citations'
+import artRouter from './routes/art'
 import exportRouter from './routes/export'
 import importRouter from './routes/import'
 
@@ -36,6 +37,7 @@ app.use('/api/reading', readingRouter)
 app.use('/api/journal', journalRouter)
 app.use('/api/routines', routinesRouter)
 app.use('/api/citations', citationsRouter)
+app.use('/api/art', artRouter)
 app.use('/api/export', exportRouter)
 app.use('/api/import', importRouter)
 

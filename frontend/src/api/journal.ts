@@ -47,14 +47,6 @@ export const MOOD_LABELS: Record<Mood, string> = {
   VERY_BAD: 'Très mauvais',
 }
 
-export const MOOD_EMOJIS: Record<Mood, string> = {
-  EXCELLENT: '😄',
-  GOOD: '🙂',
-  NEUTRAL: '😐',
-  BAD: '😔',
-  VERY_BAD: '😞',
-}
-
 export const EMPTY_DOC = '{"type":"doc","content":[{"type":"paragraph"}]}'
 
 export const journalApi = {

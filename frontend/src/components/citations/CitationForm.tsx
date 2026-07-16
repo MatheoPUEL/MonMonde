@@ -1,29 +1,39 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { Citation, CitationInput, SourceType } from '../../api/citations'
-import { citationsApi, SOURCE_TYPE_LABELS, SOURCE_TYPE_ICONS, PRESET_COLORS } from '../../api/citations'
+import { citationsApi, SOURCE_TYPE_LABELS, PRESET_COLORS } from '../../api/citations'
 import { readingApi, type Book } from '../../api/reading'
+import { artApi, type Artwork } from '../../api/art'
+import { SOURCE_TYPE_ICONS, IconCheck } from '../ui/icons'
 
 const SOURCE_TYPES: SourceType[] = [
-  'BOOK', 'ARTICLE', 'INTERNET', 'PODCAST', 'FILM', 'SERIES', 'VIDEO', 'PERSON', 'OTHER',
+  'BOOK', 'ARTWORK', 'ARTICLE', 'INTERNET', 'PODCAST', 'FILM', 'SERIES', 'VIDEO', 'PERSON', 'OTHER',
 ]
 
 interface CitationFormProps {
   initial?: Partial<Citation>
   defaultBookId?: string
+  defaultArtworkId?: string
   onSave: (data: CitationInput) => Promise<void>
   onClose: () => void
 }
 
-export function CitationForm({ initial, defaultBookId, onSave, onClose }: CitationFormProps) {
+export function CitationForm({ initial, defaultBookId, defaultArtworkId, onSave, onClose }: CitationFormProps) {
   const [text, setText] = useState(initial?.text ?? '')
   const [author, setAuthor] = useState(initial?.author ?? '')
-  const [sourceType, setSourceType] = useState<SourceType>(initial?.sourceType ?? 'OTHER')
+  const [sourceType, setSourceType] = useState<SourceType>(
+    initial?.sourceType ?? (defaultArtworkId ? 'ARTWORK' : 'OTHER')
+  )
   const [source, setSource] = useState(initial?.source ?? '')
   const [bookId, setBookId] = useState<string | null>(initial?.bookId ?? defaultBookId ?? null)
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
   const [bookSearch, setBookSearch] = useState(initial?.book?.title ?? '')
   const [bookResults, setBookResults] = useState<Book[]>([])
   const [showBookResults, setShowBookResults] = useState(false)
+  const [artworkId, setArtworkId] = useState<string | null>(initial?.artworkId ?? defaultArtworkId ?? null)
+  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null)
+  const [artworkSearch, setArtworkSearch] = useState(initial?.artwork?.title ?? '')
+  const [artworkResults, setArtworkResults] = useState<Artwork[]>([])
+  const [showArtworkResults, setShowArtworkResults] = useState(false)
   const [page, setPage] = useState<string>(initial?.page != null ? String(initial.page) : '')
   const [chapter, setChapter] = useState(initial?.chapter ?? '')
   const [comment, setComment] = useState(initial?.comment ?? '')
@@ -38,6 +48,7 @@ export function CitationForm({ initial, defaultBookId, onSave, onClose }: Citati
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const bookSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const artworkSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     citationsApi.getTags().then(d => setAllTags(d.tags)).catch(() => {})
@@ -68,6 +79,33 @@ export function CitationForm({ initial, defaultBookId, onSave, onClose }: Citati
     setSource(book.title)
     setAuthor(a => a || book.author.name)
     setShowBookResults(false)
+  }
+
+  const searchArtworks = useCallback((q: string) => {
+    if (artworkSearchRef.current) clearTimeout(artworkSearchRef.current)
+    if (!q.trim()) { setArtworkResults([]); setShowArtworkResults(false); return }
+    artworkSearchRef.current = setTimeout(async () => {
+      try {
+        const d = await artApi.getArtworks({ search: q })
+        setArtworkResults(d.artworks.slice(0, 6))
+        setShowArtworkResults(true)
+      } catch {}
+    }, 300)
+  }, [])
+
+  function handleArtworkSearchChange(val: string) {
+    setArtworkSearch(val)
+    if (!val) { setArtworkId(null); setSelectedArtwork(null) }
+    searchArtworks(val)
+  }
+
+  function selectArtwork(artwork: Artwork) {
+    setArtworkId(artwork.id)
+    setSelectedArtwork(artwork)
+    setArtworkSearch(artwork.title)
+    setSource(artwork.title)
+    setAuthor(a => a || artwork.artist.name)
+    setShowArtworkResults(false)
   }
 
   function handleTagInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -111,6 +149,7 @@ export function CitationForm({ initial, defaultBookId, onSave, onClose }: Citati
         sourceType,
         source: source || undefined,
         bookId: bookId || null,
+        artworkId: artworkId || null,
         page: page ? Number(page) : null,
         chapter: chapter || undefined,
         comment: comment || undefined,
@@ -159,16 +198,19 @@ export function CitationForm({ initial, defaultBookId, onSave, onClose }: Citati
           <div className="citation-form-row">
             <label className="citation-form-label">Type de source</label>
             <div className="source-type-grid">
-              {SOURCE_TYPES.map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`source-type-btn${sourceType === t ? ' active' : ''}`}
-                  onClick={() => setSourceType(t)}
-                >
-                  {SOURCE_TYPE_ICONS[t]} {SOURCE_TYPE_LABELS[t]}
-                </button>
-              ))}
+              {SOURCE_TYPES.map(t => {
+                const Icon = SOURCE_TYPE_ICONS[t]
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`source-type-btn${sourceType === t ? ' active' : ''}`}
+                    onClick={() => setSourceType(t)}
+                  >
+                    <Icon size={13} /> {SOURCE_TYPE_LABELS[t]}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -197,8 +239,38 @@ export function CitationForm({ initial, defaultBookId, onSave, onClose }: Citati
                 )}
               </div>
               {selectedBook && (
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                  ✓ Lié à <strong>{selectedBook.title}</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                  <IconCheck size={11} /> Lié à <strong>{selectedBook.title}</strong>
+                </div>
+              )}
+            </div>
+          ) : sourceType === 'ARTWORK' ? (
+            <div className="citation-form-row">
+              <label className="citation-form-label">Œuvre</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="input-field"
+                  value={artworkSearch}
+                  onChange={e => handleArtworkSearchChange(e.target.value)}
+                  placeholder="Rechercher dans ta collection…"
+                  onFocus={() => artworkSearch && setShowArtworkResults(true)}
+                />
+                {showArtworkResults && artworkResults.length > 0 && (
+                  <div className="book-search-results">
+                    {artworkResults.map(a => (
+                      <div key={a.id} className="book-search-item" onClick={() => selectArtwork(a)}>
+                        <div>
+                          <div className="book-search-item-title">{a.title}</div>
+                          <div className="book-search-item-author">{a.artist.name}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {selectedArtwork && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                  <IconCheck size={11} /> Lié à <strong>{selectedArtwork.title}</strong>
                 </div>
               )}
             </div>

@@ -6,6 +6,7 @@ import './styles/reading.css'
 import './styles/journal.css'
 import './styles/routines.css'
 import './styles/citations.css'
+import './styles/art.css'
 import './styles/settings.css'
 import App from './App'
 

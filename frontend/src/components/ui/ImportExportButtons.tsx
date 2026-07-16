@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { exportModule } from '../../api/export'
 import { ImportableModule } from '../../api/import'
 import { ImportResultModal } from './ImportResultModal'
+import { IconDownload, IconUpload } from './icons'
 
 interface Props {
   module: ImportableModule
@@ -54,7 +55,7 @@ export function ImportExportButtons({ module, onImportDone }: Props) {
           title="Exporter"
           aria-label="Exporter"
         >
-          {exportLoading ? <div className="loading-spinner loading-spinner--sm" /> : '↓'}
+          {exportLoading ? <div className="loading-spinner loading-spinner--sm" /> : <IconDownload size={14} />}
         </button>
         <button
           className="btn btn-ghost btn-icon"
@@ -62,7 +63,7 @@ export function ImportExportButtons({ module, onImportDone }: Props) {
           title="Importer"
           aria-label="Importer"
         >
-          ↑
+          <IconUpload size={14} />
         </button>
         <input
           ref={fileInputRef}

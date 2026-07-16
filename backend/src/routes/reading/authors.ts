@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../../middleware/auth'
 import { prisma } from '../../lib/prisma'
-import { searchAuthorOnOL } from '../../lib/openlibrary'
+import { searchAuthorCandidatesOnOL, fetchAuthorByOlid } from '../../lib/openlibrary'
 
 const router = Router()
 router.use(requireAuth)
@@ -13,6 +13,7 @@ router.get('/', async (req, res, next) => {
     const authors = await prisma.author.findMany({
       where: {
         userId: req.user!.id,
+        books: { some: {} },
         ...(search ? { name: { contains: search, mode: 'insensitive' } } : {}),
       },
       include: { _count: { select: { books: true } } },
@@ -74,6 +75,19 @@ router.put('/:id', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// GET /api/reading/authors/:id/enrich/candidates — search results for the user to pick from
+router.get('/:id/enrich/candidates', async (req, res, next) => {
+  try {
+    const existing = await prisma.author.findFirst({
+      where: { id: req.params.id, userId: req.user!.id },
+    })
+    if (!existing) { res.status(404).json({ error: 'Author not found' }); return }
+
+    const candidates = await searchAuthorCandidatesOnOL(existing.name)
+    res.json({ candidates })
+  } catch (err) { next(err) }
+})
+
 router.post('/:id/enrich', async (req, res, next) => {
   try {
     const existing = await prisma.author.findFirst({
@@ -81,7 +95,10 @@ router.post('/:id/enrich', async (req, res, next) => {
     })
     if (!existing) { res.status(404).json({ error: 'Author not found' }); return }
 
-    const result = await searchAuthorOnOL(existing.name)
+    const { olid } = req.body as { olid?: string }
+    if (!olid) { res.status(400).json({ error: 'olid is required' }); return }
+
+    const result = await fetchAuthorByOlid(olid)
     if (!result) {
       res.status(404).json({ error: 'Author not found on Open Library' })
       return
@@ -90,18 +107,26 @@ router.post('/:id/enrich', async (req, res, next) => {
     const author = await prisma.author.update({
       where: { id: req.params.id },
       data: {
-        ...(!existing.bio && result.bio ? { bio: result.bio } : {}),
-        ...(!existing.photoUrl && result.photoUrl ? { photoUrl: result.photoUrl } : {}),
-        ...(!existing.openLibraryId && result.olid ? { openLibraryId: result.olid } : {}),
-        ...(result.birthDate && !existing.birthDate
-          ? { birthDate: parseDateLoose(result.birthDate) }
-          : {}),
-        ...(result.deathDate && !existing.deathDate
-          ? { deathDate: parseDateLoose(result.deathDate) }
-          : {}),
+        ...(result.bio ? { bio: result.bio } : {}),
+        ...(result.photoUrl ? { photoUrl: result.photoUrl } : {}),
+        ...(result.olid ? { openLibraryId: result.olid } : {}),
+        ...(result.birthDate ? { birthDate: parseDateLoose(result.birthDate) } : {}),
+        ...(result.deathDate ? { deathDate: parseDateLoose(result.deathDate) } : {}),
+      },
+      include: {
+        books: {
+          include: { tags: true, author: true },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     })
-    res.json({ author })
+
+    const ratedBooks = author.books.filter(b => b.rating != null)
+    const avgRating = ratedBooks.length > 0
+      ? ratedBooks.reduce((sum, b) => sum + b.rating!, 0) / ratedBooks.length
+      : null
+
+    res.json({ author: { ...author, avgRating } })
   } catch (err) { next(err) }
 })
 

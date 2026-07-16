@@ -7,7 +7,7 @@ export interface ImportResult {
   total: number
 }
 
-export type ImportableModule = 'journal' | 'reading' | 'routines' | 'citations'
+export type ImportableModule = 'journal' | 'reading' | 'routines' | 'citations' | 'art'
 
 export async function importModule(module: ImportableModule, data: object): Promise<ImportResult> {
   return apiClient<ImportResult>(`/api/import/${module}`, {
@@ -22,6 +22,7 @@ export function countItems(module: ImportableModule, data: Record<string, unknow
     reading: 'books',
     routines: 'routines',
     citations: 'citations',
+    art: 'artworks',
   }
   const arr = data[key[module]]
   return Array.isArray(arr) ? arr.length : 0

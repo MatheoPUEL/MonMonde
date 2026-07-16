@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { citationsApi, Citation, SOURCE_TYPE_ICONS } from '../../api/citations'
+import { citationsApi, Citation } from '../../api/citations'
+import { IconCitations, SOURCE_TYPE_ICONS } from '../ui/icons'
 
 function pickRandom<T>(arr: T[]): T | null {
   if (arr.length === 0) return null
@@ -22,9 +23,11 @@ export function WidgetCitation() {
       .finally(() => setLoading(false))
   }, [])
 
+  const SourceIcon = citation ? SOURCE_TYPE_ICONS[citation.sourceType] : null
+
   return (
     <div className="dashboard-widget widget-citation">
-      <span className="dashboard-widget-title">💬 Citation du jour</span>
+      <span className="dashboard-widget-title"><IconCitations size={14} />Citation du jour</span>
       {loading ? (
         <div className="widget-loading-center">
           <div className="loading-spinner" />
@@ -39,7 +42,7 @@ export function WidgetCitation() {
               {citation.author ?? citation.source ?? 'Inconnu'}
             </span>
             <span className="widget-citation-source">
-              {SOURCE_TYPE_ICONS[citation.sourceType]}
+              {SourceIcon && <SourceIcon size={14} />}
             </span>
           </footer>
           <Link to="/citations" className="dashboard-widget-link">

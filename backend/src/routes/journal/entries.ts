@@ -55,7 +55,7 @@ router.post('/', requireAuth, async (req, res, next) => {
     const userId = (req as any).user.id
     const { title, content, mood, favorite = false, pinned = false, draft = false, tags = [] } = req.body
 
-    if (!title?.trim()) {
+    if (title === undefined || title === null) {
       res.status(400).json({ error: 'title is required' })
       return
     }

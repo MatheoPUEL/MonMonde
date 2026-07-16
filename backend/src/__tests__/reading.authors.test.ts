@@ -46,8 +46,10 @@ describe('GET /api/reading/authors', () => {
   })
 
   it('filters by search', async () => {
-    await prisma.author.create({ data: { userId, name: 'Frank Herbert' } })
-    await prisma.author.create({ data: { userId, name: 'Isaac Asimov' } })
+    const herbert = await prisma.author.create({ data: { userId, name: 'Frank Herbert' } })
+    const asimov = await prisma.author.create({ data: { userId, name: 'Isaac Asimov' } })
+    await prisma.book.create({ data: { userId, title: 'Dune', authorId: herbert.id, genres: [] } })
+    await prisma.book.create({ data: { userId, title: 'Foundation', authorId: asimov.id, genres: [] } })
 
     const res = await request(app)
       .get('/api/reading/authors?search=frank')
@@ -55,6 +57,14 @@ describe('GET /api/reading/authors', () => {
     expect(res.status).toBe(200)
     expect(res.body.authors).toHaveLength(1)
     expect(res.body.authors[0].name).toBe('Frank Herbert')
+  })
+
+  it('excludes authors with no books', async () => {
+    await prisma.author.create({ data: { userId, name: 'Orphan Author' } })
+
+    const res = await request(app).get('/api/reading/authors').set('Cookie', cookie)
+    expect(res.status).toBe(200)
+    expect(res.body.authors).toEqual([])
   })
 })
 

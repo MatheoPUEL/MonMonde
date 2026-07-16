@@ -7,12 +7,13 @@ const router = Router()
 const CITATION_INCLUDE = {
   tags: true,
   book: { select: { id: true, title: true, coverUrl: true, author: true } },
+  artwork: { select: { id: true, title: true, coverUrl: true, artist: true } },
 } as const
 
 // GET /api/citations
 router.get('/', async (req, res, next) => {
   try {
-    const { search, sourceType, favorite, tag, bookId } = req.query as Record<string, string>
+    const { search, sourceType, favorite, tag, bookId, artworkId } = req.query as Record<string, string>
     const userId = req.user!.id
 
     const where: Record<string, unknown> = { userId }
@@ -21,6 +22,7 @@ router.get('/', async (req, res, next) => {
     }
     if (favorite === 'true') where.favorite = true
     if (bookId) where.bookId = bookId
+    if (artworkId) where.artworkId = artworkId
     if (search) {
       where.OR = [
         { text: { contains: search, mode: 'insensitive' } },
@@ -136,7 +138,7 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/citations
 router.post('/', async (req, res, next) => {
   try {
-    const { text, author, sourceType, source, bookId, page, chapter, comment, color, favorite, tags } = req.body
+    const { text, author, sourceType, source, bookId, artworkId, page, chapter, comment, color, favorite, tags } = req.body
     if (!text?.trim()) { res.status(400).json({ error: 'text is required' }); return }
 
     if (bookId) {
@@ -147,6 +149,14 @@ router.post('/', async (req, res, next) => {
       if (!book) { res.status(404).json({ error: 'Book not found' }); return }
     }
 
+    if (artworkId) {
+      const artwork = await prisma.artwork.findFirst({
+        where: { id: artworkId, userId: req.user!.id },
+        select: { id: true },
+      })
+      if (!artwork) { res.status(404).json({ error: 'Artwork not found' }); return }
+    }
+
     const citation = await prisma.citation.create({
       data: {
         userId: req.user!.id,
@@ -155,6 +165,7 @@ router.post('/', async (req, res, next) => {
         sourceType: sourceType || 'OTHER',
         source: source || undefined,
         bookId: bookId || undefined,
+        artworkId: artworkId || undefined,
         page: page != null ? Number(page) : undefined,
         chapter: chapter || undefined,
         comment: comment || undefined,
@@ -178,7 +189,7 @@ router.put('/:id', async (req, res, next) => {
     })
     if (!existing) { res.status(404).json({ error: 'Citation not found' }); return }
 
-    const { text, author, sourceType, source, bookId, page, chapter, comment, color, favorite, tags } = req.body
+    const { text, author, sourceType, source, bookId, artworkId, page, chapter, comment, color, favorite, tags } = req.body
 
     if (sourceType !== undefined && !Object.values(SourceType).includes(sourceType as SourceType)) {
       res.status(400).json({ error: 'Invalid sourceType' }); return
@@ -192,6 +203,14 @@ router.put('/:id', async (req, res, next) => {
       if (!book) { res.status(404).json({ error: 'Book not found' }); return }
     }
 
+    if (artworkId !== undefined && artworkId) {
+      const artwork = await prisma.artwork.findFirst({
+        where: { id: artworkId, userId: req.user!.id },
+        select: { id: true },
+      })
+      if (!artwork) { res.status(404).json({ error: 'Artwork not found' }); return }
+    }
+
     const citation = await prisma.citation.update({
       where: { id: req.params.id },
       data: {
@@ -200,6 +219,7 @@ router.put('/:id', async (req, res, next) => {
         ...(sourceType !== undefined && { sourceType }),
         ...(source !== undefined && { source }),
         ...(bookId !== undefined && { bookId: bookId || null }),
+        ...(artworkId !== undefined && { artworkId: artworkId || null }),
         ...(page !== undefined && { page: page != null ? Number(page) : null }),
         ...(chapter !== undefined && { chapter }),
         ...(comment !== undefined && { comment }),

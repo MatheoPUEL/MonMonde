@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { authorsApi, type Author } from '../../api/reading'
+import { authorsApi, type Author, type OLAuthorCandidate } from '../../api/reading'
 import { BookRow } from '../../components/reading/BookRow'
+import { EnrichPickerModal } from '../../components/ui/EnrichPickerModal'
+import { IconChevronLeft } from '../../components/ui/icons'
+
+function candidateSubtitle(c: OLAuthorCandidate): string | undefined {
+  const parts = [
+    (c.birthDate || c.deathDate) ? `${c.birthDate ?? '?'} – ${c.deathDate ?? '…'}` : null,
+    c.workCount ? `${c.workCount} œuvre${c.workCount > 1 ? 's' : ''} répertoriée${c.workCount > 1 ? 's' : ''}` : null,
+  ].filter(Boolean)
+  return parts.length ? parts.join(' · ') : undefined
+}
 
 export function AuthorDetail() {
   const { authorId } = useParams<{ authorId: string }>()
   const [author, setAuthor] = useState<Author | null>(null)
-  const [enriching, setEnriching] = useState(false)
+  const [searching, setSearching] = useState(false)
+  const [applying, setApplying] = useState(false)
+  const [candidates, setCandidates] = useState<OLAuthorCandidate[] | null>(null)
   const [enrichMsg, setEnrichMsg] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -18,19 +30,35 @@ export function AuthorDetail() {
       .finally(() => setLoading(false))
   }, [authorId])
 
-  async function handleEnrich() {
+  async function handleOpenEnrich() {
     if (!authorId) return
-    setEnriching(true)
+    setSearching(true)
     setEnrichMsg(null)
     try {
-      const data = await authorsApi.enrich(authorId)
+      const data = await authorsApi.getEnrichCandidates(authorId)
+      if (data.candidates.length === 0) {
+        setEnrichMsg('Aucun résultat trouvé sur Open Library.')
+      } else {
+        setCandidates(data.candidates)
+      }
+    } catch {
+      setEnrichMsg('Erreur lors de la recherche.')
+    }
+    setSearching(false)
+  }
+
+  async function handleApply(olid: string) {
+    if (!authorId) return
+    setApplying(true)
+    try {
+      const data = await authorsApi.enrich(authorId, olid)
       setAuthor(data.author)
       setEnrichMsg('Informations mises à jour.')
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e)
-      setEnrichMsg(msg.includes('404') ? 'Auteur introuvable sur Open Library.' : "Erreur lors de l'enrichissement.")
+      setCandidates(null)
+    } catch {
+      setEnrichMsg("Erreur lors de l'enrichissement.")
     }
-    setEnriching(false)
+    setApplying(false)
   }
 
   if (loading) return <div className="routines-loading"><div className="loading-spinner" /></div>
@@ -40,9 +68,9 @@ export function AuthorDetail() {
 
   return (
     <div className="author-detail">
-      <Link to="/reading/authors" className="author-back-link">← Auteurs</Link>
+      <Link to="/reading/authors" className="author-back-link"><IconChevronLeft size={12} /> Auteurs</Link>
 
-      <div className="glass-card author-detail-header">
+      <div className="author-detail-header">
         <div className="author-detail-avatar">
           {author.photoUrl
             ? <img src={author.photoUrl} alt={author.name} className="author-detail-photo" />
@@ -66,15 +94,25 @@ export function AuthorDetail() {
             <button
               className="btn btn-ghost"
               style={{ width: 'auto', padding: '0.5rem 1rem' }}
-              onClick={handleEnrich}
-              disabled={enriching}
+              onClick={handleOpenEnrich}
+              disabled={searching}
             >
-              {enriching ? <span className="loading-spinner loading-spinner--sm" /> : '✦'} Enrichir via Open Library
+              {searching ? <span className="loading-spinner loading-spinner--sm" /> : '✦'} Enrichir via Open Library
             </button>
             {enrichMsg && <span className="author-enrich-msg">{enrichMsg}</span>}
           </div>
         </div>
       </div>
+
+      {candidates && (
+        <EnrichPickerModal
+          title="Choisir la fiche Open Library"
+          candidates={candidates.map(c => ({ id: c.olid, title: c.name, subtitle: candidateSubtitle(c) }))}
+          applying={applying}
+          onSelect={handleApply}
+          onClose={() => setCandidates(null)}
+        />
+      )}
 
       <div className="author-detail-books">
         <h2 className="author-detail-section-title">

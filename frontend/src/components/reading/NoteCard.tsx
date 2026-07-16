@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BookNote, readingApi } from '../../api/reading'
 import { ConfirmModal } from '../ui/ConfirmModal'
+import { IconTrash } from '../ui/icons'
 
 interface Props {
   note: BookNote
@@ -25,15 +26,15 @@ export function NoteCard({ note, bookId, onDeleted }: Props) {
 
   return (
     <>
-      <div className="glass-card note-card">
+      <div className="note-card">
         <div className="note-card-header">
           <div className="note-card-title">{note.title}</div>
           <div className="note-card-actions">
-            <button className="btn-icon" onClick={() => setShowDeleteConfirm(true)} title="Supprimer">🗑</button>
+            <button className="btn-icon" onClick={() => setShowDeleteConfirm(true)} title="Supprimer"><IconTrash size={13} /></button>
           </div>
         </div>
         <div className="note-card-content">{note.content}</div>
-        {ref && <div className="note-card-ref">📖 {ref}</div>}
+        {ref && <div className="note-card-ref">{ref}</div>}
         <div className="note-card-date">
           {new Date(note.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
         </div>

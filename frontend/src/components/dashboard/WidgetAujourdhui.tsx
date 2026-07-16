@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { routinesApi, TodayItem } from '../../api/routines'
+import { IconRoutines } from '../ui/icons'
 
 const RING_R = 34
 const RING_CIRC = 2 * Math.PI * RING_R
@@ -23,7 +24,7 @@ function ProgressRing({ done, total }: { done: number; total: number }) {
       <text x="44" y="40" textAnchor="middle" dominantBaseline="middle" className="widget-ring-label">
         {done}/{total}
       </text>
-      <text x="44" y="56" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '8px', fill: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif' }}>
+      <text x="44" y="56" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '8px', fill: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
         faites
       </text>
     </svg>
@@ -46,7 +47,7 @@ export function WidgetAujourdhui() {
 
   return (
     <div className="dashboard-widget widget-today">
-      <span className="dashboard-widget-title">🔄 Aujourd'hui</span>
+      <span className="dashboard-widget-title"><IconRoutines size={14} />Aujourd'hui</span>
       {loading ? (
         <div className="widget-loading-center">
           <div className="loading-spinner" />

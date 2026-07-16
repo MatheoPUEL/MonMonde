@@ -1,4 +1,5 @@
-import { Mood, MOOD_EMOJIS, MOOD_LABELS } from '../../api/journal'
+import { Mood, MOOD_LABELS } from '../../api/journal'
+import { MOOD_ICONS } from '../ui/icons'
 
 const MOODS: Mood[] = ['EXCELLENT', 'GOOD', 'NEUTRAL', 'BAD', 'VERY_BAD']
 
@@ -10,18 +11,21 @@ interface Props {
 export function MoodPicker({ value, onChange }: Props) {
   return (
     <div className="mood-picker">
-      {MOODS.map(mood => (
-        <button
-          key={mood}
-          type="button"
-          className={`mood-picker-btn${value === mood ? ' mood-picker-btn--active' : ''}`}
-          onClick={() => onChange(value === mood ? null : mood)}
-          title={MOOD_LABELS[mood]}
-        >
-          <span className="mood-picker-emoji">{MOOD_EMOJIS[mood]}</span>
-          <span className="mood-picker-label">{MOOD_LABELS[mood]}</span>
-        </button>
-      ))}
+      {MOODS.map(mood => {
+        const Icon = MOOD_ICONS[mood]
+        return (
+          <button
+            key={mood}
+            type="button"
+            className={`mood-picker-btn${value === mood ? ' mood-picker-btn--active' : ''}`}
+            onClick={() => onChange(value === mood ? null : mood)}
+            title={MOOD_LABELS[mood]}
+          >
+            <span className="mood-picker-emoji"><Icon size={19} /></span>
+            <span className="mood-picker-label">{MOOD_LABELS[mood]}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }
