@@ -78,7 +78,7 @@ export interface Artwork {
 }
 
 export interface ArtSearchResult {
-  sourceApi: 'met' | 'aic'
+  sourceApi: 'met' | 'aic' | 'cma' | 'vaa' | 'wikidata'
   sourceId: string
   sourceUrl?: string
   title: string
