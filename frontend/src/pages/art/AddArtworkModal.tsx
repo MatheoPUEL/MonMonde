@@ -119,26 +119,26 @@ export function AddArtworkModal({ onClose, onAdded }: Props) {
 
         {!manual ? (
           <>
-            <div className="search-input-wrap">
+            <div className="add-search-input-wrap">
               <Input
                 placeholder="Rechercher un titre, un artiste..."
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 autoFocus
               />
-              {searching && <div className="search-spinner" />}
+              {searching && <div className="add-search-spinner" />}
             </div>
 
             {results.length > 0 && (
-              <div className="search-results">
+              <div className="add-search-results">
                 {results.map(r => (
-                  <div key={`${r.sourceApi}-${r.sourceId}`} className="search-result-item" onClick={() => fillFromResult(r)}>
-                    <div className="search-result-cover">
+                  <div key={`${r.sourceApi}-${r.sourceId}`} className="add-search-result-item" onClick={() => fillFromResult(r)}>
+                    <div className="add-search-result-cover">
                       {r.imageUrl ? <img src={r.imageUrl} alt={r.title} /> : artworkInitials(r.title)}
                     </div>
-                    <div className="search-result-info">
-                      <div className="search-result-title">{r.title}</div>
-                      <div className="search-result-author">{r.artist} {r.dateDisplay ? `· ${r.dateDisplay}` : ''}</div>
+                    <div className="add-search-result-info">
+                      <div className="add-search-result-title">{r.title}</div>
+                      <div className="add-search-result-author">{r.artist} {r.dateDisplay ? `· ${r.dateDisplay}` : ''}</div>
                     </div>
                   </div>
                 ))}
@@ -146,7 +146,7 @@ export function AddArtworkModal({ onClose, onAdded }: Props) {
             )}
 
             {query && !searching && results.length === 0 && (
-              <div className="search-no-results">
+              <div className="add-search-no-results">
                 Aucun résultat.{' '}
                 <button className="manual-toggle" onClick={() => setManual(true)}>Saisie manuelle</button>
               </div>

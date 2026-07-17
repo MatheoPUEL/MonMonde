@@ -24,17 +24,17 @@ export function EnrichPickerModal({ title, candidates, applying, onSelect, onClo
           <button className="modal-close" onClick={onClose}><IconClose size={16} /></button>
         </div>
 
-        <div className="search-results" style={{ maxHeight: 320 }}>
+        <div className="add-search-results" style={{ maxHeight: 320 }}>
           {candidates.map(c => (
             <div
               key={c.id}
-              className="search-result-item"
+              className="add-search-result-item"
               onClick={() => { if (!applying) onSelect(c.id) }}
               style={applying ? { opacity: 0.6, pointerEvents: 'none' } : undefined}
             >
-              <div className="search-result-info">
-                <div className="search-result-title">{c.title}</div>
-                {c.subtitle && <div className="search-result-author">{c.subtitle}</div>}
+              <div className="add-search-result-info">
+                <div className="add-search-result-title">{c.title}</div>
+                {c.subtitle && <div className="add-search-result-author">{c.subtitle}</div>}
               </div>
             </div>
           ))}

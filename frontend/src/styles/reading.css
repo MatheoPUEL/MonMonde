@@ -557,10 +557,10 @@
 
 .modal-close:hover { background: var(--bg-surface-2); color: var(--text-primary); }
 
-.search-input-wrap { position: relative; }
-.search-spinner { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 2px solid var(--accent-light); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+.add-search-input-wrap { position: relative; }
+.add-search-spinner { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 2px solid var(--accent-light); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
 
-.search-results {
+.add-search-results {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
@@ -571,7 +571,7 @@
   background: var(--bg-surface);
 }
 
-.search-result-item {
+.add-search-result-item {
   display: flex;
   align-items: center;
   gap: 0.875rem;
@@ -580,9 +580,9 @@
   transition: background var(--transition);
 }
 
-.search-result-item:hover { background: var(--bg-surface-2); }
+.add-search-result-item:hover { background: var(--bg-surface-2); }
 
-.search-result-cover {
+.add-search-result-cover {
   width: 36px;
   height: 54px;
   object-fit: cover;
@@ -599,10 +599,11 @@
   overflow: hidden;
 }
 
-.search-result-cover img { width: 100%; height: 100%; object-fit: cover; }
-.search-result-title { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
-.search-result-author { font-size: 0.75rem; color: var(--text-secondary); }
-.search-no-results { padding: 1rem; text-align: center; color: var(--text-secondary); font-size: 0.85rem; }
+.add-search-result-cover img { width: 100%; height: 100%; object-fit: cover; }
+.add-search-result-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.add-search-result-title { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+.add-search-result-author { font-size: 0.75rem; color: var(--text-secondary); }
+.add-search-no-results { padding: 1rem; text-align: center; color: var(--text-secondary); font-size: 0.85rem; }
 
 .manual-toggle {
   background: none;

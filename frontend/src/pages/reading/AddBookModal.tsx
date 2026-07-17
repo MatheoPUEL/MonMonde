@@ -117,26 +117,26 @@ export function AddBookModal({ onClose, onAdded }: Props) {
 
         {!manual ? (
           <>
-            <div className="search-input-wrap">
+            <div className="add-search-input-wrap">
               <Input
                 placeholder="Rechercher un titre, auteur ou ISBN..."
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 autoFocus
               />
-              {searching && <div className="search-spinner" />}
+              {searching && <div className="add-search-spinner" />}
             </div>
 
             {results.length > 0 && (
-              <div className="search-results">
+              <div className="add-search-results">
                 {results.map(r => (
-                  <div key={r.googleBooksId} className="search-result-item" onClick={() => fillFromResult(r)}>
-                    <div className="search-result-cover">
+                  <div key={r.googleBooksId} className="add-search-result-item" onClick={() => fillFromResult(r)}>
+                    <div className="add-search-result-cover">
                       {r.coverUrl ? <img src={r.coverUrl} alt={r.title} /> : bookInitials(r.title)}
                     </div>
-                    <div className="search-result-info">
-                      <div className="search-result-title">{r.title}</div>
-                      <div className="search-result-author">{r.author}</div>
+                    <div className="add-search-result-info">
+                      <div className="add-search-result-title">{r.title}</div>
+                      <div className="add-search-result-author">{r.author}</div>
                     </div>
                   </div>
                 ))}
@@ -144,7 +144,7 @@ export function AddBookModal({ onClose, onAdded }: Props) {
             )}
 
             {query && !searching && results.length === 0 && (
-              <div className="search-no-results">
+              <div className="add-search-no-results">
                 Aucun résultat.{' '}
                 <button className="manual-toggle" onClick={() => setManual(true)}>Saisie manuelle</button>
               </div>
