@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { journalApi, JournalEntry, JournalStats } from '../../api/journal'
+import { useNavigate } from 'react-router-dom'
+import { journalApi, JournalEntry, JournalStats, EMPTY_DOC } from '../../api/journal'
 import { Button } from '../ui/Button'
 import { IconJournal, IconFlame, MOOD_ICONS } from '../ui/icons'
 
@@ -36,6 +36,13 @@ export function WidgetJournal() {
   const MoodIcon = entry?.mood ? MOOD_ICONS[entry.mood] : null
   const snippet = entry?.contentText.trim().slice(0, 220)
 
+  async function handleNew() {
+    try {
+      const { entry } = await journalApi.createEntry({ title: '', content: EMPTY_DOC, draft: true })
+      navigate(`/journal/${entry.id}`)
+    } catch {}
+  }
+
   return (
     <div className="dashboard-widget widget-journal">
       <div className="widget-journal-header">
@@ -67,9 +74,9 @@ export function WidgetJournal() {
       ) : (
         <div className="widget-empty">
           <span>Pas encore d'entrée</span>
-          <Link to="/journal" className="btn btn-ghost" style={{ width: 'auto' }}>
+          <button className="btn btn-ghost" style={{ width: 'auto' }} onClick={handleNew}>
             Écrire
-          </Link>
+          </button>
         </div>
       )}
     </div>

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { citationsApi, type Citation, SOURCE_TYPE_LABELS } from '../../api/citations'
 import { CitationForm } from '../../components/citations/CitationForm'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
-import { SOURCE_TYPE_ICONS, IconStar, IconChevronLeft, IconChevronRight, IconReading } from '../../components/ui/icons'
+import { SOURCE_TYPE_ICONS, IconStar, IconChevronLeft, IconChevronRight, IconReading, IconArt } from '../../components/ui/icons'
 
 export function CitationDetail() {
   const { id } = useParams<{ id: string }>()
@@ -114,6 +114,24 @@ export function CitationDetail() {
             <div className="citation-detail-book-info">
               <div className="citation-detail-book-title">{citation.book.title}</div>
               <div className="citation-detail-book-author">{citation.book?.author?.name}</div>
+            </div>
+            <IconChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+          </Link>
+        </div>
+      )}
+
+      {citation.artwork && (
+        <div className="citation-detail-section">
+          <div className="citation-detail-section-title">Œuvre liée</div>
+          <Link to={`/art/${citation.artwork.id}`} className="citation-detail-book-link">
+            <div className="citation-detail-book-cover">
+              {citation.artwork.coverUrl
+                ? <img src={citation.artwork.coverUrl} alt={citation.artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3 }} />
+                : <IconArt size={16} />}
+            </div>
+            <div className="citation-detail-book-info">
+              <div className="citation-detail-book-title">{citation.artwork.title}</div>
+              <div className="citation-detail-book-author">{citation.artwork?.artist?.name}</div>
             </div>
             <IconChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
           </Link>

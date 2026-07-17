@@ -34,17 +34,19 @@ export function WidgetCitation() {
         </div>
       ) : citation ? (
         <>
-          <blockquote className="widget-citation-text">
-            <p>{citation.text}</p>
-          </blockquote>
-          <footer className="widget-citation-footer">
-            <span className="widget-citation-author">
-              {citation.author ?? citation.source ?? 'Inconnu'}
-            </span>
-            <span className="widget-citation-source">
-              {SourceIcon && <SourceIcon size={14} />}
-            </span>
-          </footer>
+          <Link to={`/citations/${citation.id}`} className="widget-citation-link">
+            <blockquote className="widget-citation-text">
+              <p>{citation.text}</p>
+            </blockquote>
+            <footer className="widget-citation-footer">
+              <span className="widget-citation-author">
+                {citation.author ?? citation.source ?? 'Inconnu'}
+              </span>
+              <span className="widget-citation-source">
+                {SourceIcon && <SourceIcon size={14} />}
+              </span>
+            </footer>
+          </Link>
           <Link to="/citations" className="dashboard-widget-link">
             Voir les citations →
           </Link>

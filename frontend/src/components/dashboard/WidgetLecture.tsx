@@ -62,7 +62,9 @@ export function WidgetLecture() {
           {extra > 0 && (
             <span className="widget-reading-more">et {extra} autre{extra > 1 ? 's' : ''} en cours</span>
           )}
-          <Button onClick={() => navigate('/reading')}>Continuer la lecture</Button>
+          <Button onClick={() => navigate(shown.length === 1 ? `/reading/${shown[0].id}` : '/reading')}>
+            Continuer la lecture
+          </Button>
         </>
       ) : (
         <div className="widget-empty">
