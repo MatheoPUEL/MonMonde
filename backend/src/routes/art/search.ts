@@ -46,28 +46,36 @@ interface MetObject {
   tags?: Array<{ term: string }>
 }
 
-async function searchMet(q: string): Promise<ArtSearchResult[]> {
+interface SourceResult {
+  results: ArtSearchResult[]
+  // false when the source errored/timed out — as opposed to a legitimate
+  // zero-match response — so callers know not to trust an empty result as final.
+  ok: boolean
+}
+
+async function searchMet(q: string): Promise<SourceResult> {
   try {
     const searchRes = await fetch(
       `https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=${encodeURIComponent(q)}`,
       { signal: AbortSignal.timeout(8000) }
     )
-    if (!searchRes.ok) return []
+    if (!searchRes.ok) return { results: [], ok: false }
     const searchData = await searchRes.json() as { objectIDs?: number[] }
     const ids = (searchData.objectIDs ?? []).slice(0, 8)
 
+    let anyObjectFailed = false
     const objects = await Promise.all(ids.map(async id => {
       try {
         const res = await fetch(
           `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,
           { signal: AbortSignal.timeout(8000) }
         )
-        if (!res.ok) return null
+        if (!res.ok) { anyObjectFailed = true; return null }
         return await res.json() as MetObject
-      } catch { return null }
+      } catch { anyObjectFailed = true; return null }
     }))
 
-    return objects
+    const results = objects
       .filter((o): o is MetObject => !!o && !!o.title)
       .map(o => ({
         sourceApi: 'met' as const,
@@ -87,8 +95,9 @@ async function searchMet(q: string): Promise<ArtSearchResult[]> {
         museum: o.repository || 'The Metropolitan Museum of Art',
         imageUrl: o.primaryImage || o.primaryImageSmall,
       }))
+    return { results, ok: !anyObjectFailed }
   } catch {
-    return []
+    return { results: [], ok: false }
   }
 }
 
@@ -105,18 +114,18 @@ interface AicObject {
   image_id?: string
 }
 
-async function searchAic(q: string): Promise<ArtSearchResult[]> {
+async function searchAic(q: string): Promise<SourceResult> {
   try {
     const fields = 'id,title,artist_title,date_display,date_start,medium_display,dimensions,place_of_origin,style_title,image_id'
     const res = await fetch(
       `https://api.artic.edu/api/v1/artworks/search?q=${encodeURIComponent(q)}&fields=${fields}&limit=8`,
       { signal: AbortSignal.timeout(8000) }
     )
-    if (!res.ok) return []
+    if (!res.ok) return { results: [], ok: false }
     const data = await res.json() as { data?: AicObject[]; config?: { iiif_url?: string } }
     const iiifUrl = data.config?.iiif_url
 
-    return (data.data ?? [])
+    const results = (data.data ?? [])
       .filter(o => !!o.title)
       .map(o => ({
         sourceApi: 'aic' as const,
@@ -136,8 +145,9 @@ async function searchAic(q: string): Promise<ArtSearchResult[]> {
         museum: 'Art Institute of Chicago',
         imageUrl: o.image_id && iiifUrl ? `${iiifUrl}/${o.image_id}/full/843,/0/default.jpg` : undefined,
       }))
+    return { results, ok: true }
   } catch {
-    return []
+    return { results: [], ok: false }
   }
 }
 
@@ -174,10 +184,13 @@ router.get('/', requireAuth, async (req, res, next) => {
       return
     }
 
-    const [aicResults, metResults] = await Promise.all([searchAic(q), searchMet(q)])
-    const artworks = [...aicResults, ...metResults]
+    const [aic, met] = await Promise.all([searchAic(q), searchMet(q)])
+    const artworks = [...aic.results, ...met.results]
 
-    if (artworks.length > 0) {
+    // Only cache when both sources actually answered — caching a response
+    // where one source merely timed out would permanently freeze an
+    // incomplete result set under this query.
+    if (artworks.length > 0 && aic.ok && met.ok) {
       await Promise.all(artworks.map(a => prisma.artworkSearchCache.upsert({
         where: { sourceApi_sourceId: { sourceApi: a.sourceApi, sourceId: a.sourceId } },
         update: {
