@@ -1,7 +1,10 @@
 import { Router } from 'express'
 import { requireAuth } from '../../middleware/auth'
+import { prisma } from '../../lib/prisma'
 
 const router = Router()
+
+const CACHE_RESULT_LIMIT = 16
 
 export interface ArtSearchResult {
   sourceApi: 'met' | 'aic'
@@ -138,6 +141,12 @@ async function searchAic(q: string): Promise<ArtSearchResult[]> {
   }
 }
 
+const CACHE_SELECT = {
+  sourceApi: true, sourceId: true, sourceUrl: true, title: true, artist: true,
+  dateDisplay: true, year: true, century: true, currents: true, themes: true,
+  technique: true, medium: true, dimensions: true, country: true, museum: true, imageUrl: true,
+} as const
+
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const q = (req.query.q as string)?.trim()
@@ -146,8 +155,69 @@ router.get('/', requireAuth, async (req, res, next) => {
       return
     }
 
+    // Each word of the query must show up somewhere across title/artist —
+    // matching the query as one literal substring would miss almost every
+    // real search ("sunflowers van gogh" spans both fields, never one of them).
+    const words = q.split(/\s+/).filter(Boolean)
+
+    // Local cache first — Met's object-detail fetches in particular are
+    // expensive (one request per result), so a repeat search should be free.
+    const cached = await prisma.artworkSearchCache.findMany({
+      where: { AND: words.map(w => ({ OR: [{ title: { contains: w, mode: 'insensitive' } }, { artist: { contains: w, mode: 'insensitive' } }] })) },
+      select: CACHE_SELECT,
+      take: CACHE_RESULT_LIMIT,
+      orderBy: { updatedAt: 'desc' },
+    })
+
+    if (cached.length > 0) {
+      res.json({ artworks: cached.map(c => ({ ...c, sourceApi: c.sourceApi as 'met' | 'aic' })) })
+      return
+    }
+
     const [aicResults, metResults] = await Promise.all([searchAic(q), searchMet(q)])
-    res.json({ artworks: [...aicResults, ...metResults] })
+    const artworks = [...aicResults, ...metResults]
+
+    if (artworks.length > 0) {
+      await Promise.all(artworks.map(a => prisma.artworkSearchCache.upsert({
+        where: { sourceApi_sourceId: { sourceApi: a.sourceApi, sourceId: a.sourceId } },
+        update: {
+          sourceUrl: a.sourceUrl ?? null,
+          title: a.title,
+          artist: a.artist,
+          dateDisplay: a.dateDisplay ?? null,
+          year: a.year ?? null,
+          century: a.century ?? null,
+          currents: a.currents,
+          themes: a.themes,
+          technique: a.technique ?? null,
+          medium: a.medium ?? null,
+          dimensions: a.dimensions ?? null,
+          country: a.country ?? null,
+          museum: a.museum,
+          imageUrl: a.imageUrl ?? null,
+        },
+        create: {
+          sourceApi: a.sourceApi,
+          sourceId: a.sourceId,
+          sourceUrl: a.sourceUrl ?? null,
+          title: a.title,
+          artist: a.artist,
+          dateDisplay: a.dateDisplay ?? null,
+          year: a.year ?? null,
+          century: a.century ?? null,
+          currents: a.currents,
+          themes: a.themes,
+          technique: a.technique ?? null,
+          medium: a.medium ?? null,
+          dimensions: a.dimensions ?? null,
+          country: a.country ?? null,
+          museum: a.museum,
+          imageUrl: a.imageUrl ?? null,
+        },
+      })))
+    }
+
+    res.json({ artworks })
   } catch (err) {
     next(err)
   }

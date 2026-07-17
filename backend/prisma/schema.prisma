@@ -310,6 +310,24 @@ model AuthorEnrichmentCache {
   cachedAt  DateTime  @default(now())
 }
 
+model BookSearchCache {
+  id            String   @id @default(cuid())
+  googleBooksId String   @unique
+  title         String
+  author        String
+  synopsis      String?
+  isbn          String?
+  pageCount     Int?
+  genres        String[]
+  coverUrl      String?
+  cachedAt      DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([title])
+  @@index([author])
+  @@index([isbn])
+}
+
 enum ArtworkMediaType {
   IMAGE
   PDF
@@ -425,4 +443,30 @@ model ArtworkMedia {
   createdAt    DateTime         @default(now())
 
   @@index([artworkId])
+}
+
+model ArtworkSearchCache {
+  id          String   @id @default(cuid())
+  sourceApi   String
+  sourceId    String
+  sourceUrl   String?
+  title       String
+  artist      String
+  dateDisplay String?
+  year        Int?
+  century     Int?
+  currents    String[]
+  themes      String[]
+  technique   String?
+  medium      String?
+  dimensions  String?
+  country     String?
+  museum      String
+  imageUrl    String?
+  cachedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([sourceApi, sourceId])
+  @@index([title])
+  @@index([artist])
 }
