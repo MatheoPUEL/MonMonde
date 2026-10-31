@@ -206,3 +206,332 @@
 }
 
 .media-item-add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Carte des musées ─────────────────────────────────────────────── */
+
+/* Each status carries its own color; dots, chips, badges and markers all read it */
+.museum-filter--visited, .museum-status--visited, .museum-marker--visited { --status-color: var(--map-visited); }
+.museum-filter--wishlist, .museum-status--wishlist, .museum-marker--wishlist { --status-color: var(--map-wishlist); }
+.museum-filter--artworks, .museum-status--artworks, .museum-marker--artworks { --status-color: var(--map-artworks); }
+
+.museum-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--status-color);
+  flex-shrink: 0;
+}
+
+.museum-filter.filter-chip--active {
+  background: color-mix(in srgb, var(--status-color) 14%, transparent);
+  border-color: var(--status-color);
+  color: var(--text-primary);
+}
+.museum-filter:not(.filter-chip--active) .museum-dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--status-color); }
+.museum-filter:hover { border-color: var(--status-color); }
+.museum-filter-count { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.museum-map-page { max-width: 1280px; }
+
+.museum-map-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin-bottom: 6px;
+  transition: color var(--transition);
+}
+.museum-map-back:hover { color: var(--accent); }
+
+.museum-map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  height: max(460px, calc(100vh - 250px));
+  animation: fadeUp 0.4s ease 0.15s both;
+}
+
+.museum-map-frame {
+  position: relative;
+  isolation: isolate; /* keep Leaflet's z-indexed panes below modals */
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.museum-map-canvas { position: absolute; inset: 0; }
+
+.museum-map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-glass);
+  z-index: 500;
+}
+
+.museum-map-side {
+  border-radius: var(--radius-lg);
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.museum-map-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 48px 20px;
+  color: var(--text-muted);
+}
+.museum-map-empty p { color: var(--text-secondary); font-size: 14px; }
+.museum-map-empty .museum-map-empty-hint { color: var(--text-muted); font-size: 12.5px; line-height: 1.55; }
+
+/* Museum list (side panel, nothing selected) */
+.museum-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+.museum-list-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  transition: background var(--transition);
+}
+.museum-list-item:hover { background: var(--bg-surface-2); }
+.museum-list-item:hover .museum-list-name { color: var(--accent); }
+
+.museum-list-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.museum-list-name {
+  font-family: var(--font-serif);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition);
+}
+.museum-list-meta { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.museum-list-counts { display: flex; flex-direction: column; align-items: flex-end; font-size: 11.5px; color: var(--text-secondary); white-space: nowrap; }
+
+/* Museum detail (side panel) */
+.museum-panel { display: flex; flex-direction: column; gap: 18px; padding: 8px 8px 12px; }
+
+.museum-panel-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  padding: 0;
+  transition: color var(--transition);
+}
+.museum-panel-back:hover { color: var(--accent); }
+
+.museum-panel-head { display: flex; flex-direction: column; gap: 4px; }
+
+.museum-status {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 3px 10px 3px 8px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--status-color) 14%, transparent);
+  margin-bottom: 4px;
+}
+
+.museum-panel-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.museum-panel-place { font-size: 13px; color: var(--text-secondary); }
+.museum-panel-place--missing { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); }
+
+.museum-panel-actions { display: flex; flex-direction: column; gap: 6px; }
+.museum-panel-actions .btn-side:disabled { opacity: 0.6; cursor: default; }
+
+.museum-panel-error {
+  font-size: 12.5px;
+  color: var(--danger);
+  background: var(--danger-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.museum-visit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-2);
+}
+.museum-visit-form-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.museum-visit-form-actions .btn { width: auto; }
+
+.museum-panel-section .book-detail-section-title { font-size: 15px; margin-bottom: 8px; }
+.museum-panel-empty { font-size: 13px; color: var(--text-muted); }
+
+.museum-visits { list-style: none; display: flex; flex-direction: column; }
+.museum-visit {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.museum-visit:last-child { border-bottom: none; }
+.museum-visit-date { font-size: 13.5px; color: var(--text-primary); }
+.museum-visit-note { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+.museum-visit-delete {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition), background var(--transition);
+}
+.museum-visit:hover .museum-visit-delete, .museum-visit-delete:focus-visible { opacity: 1; }
+.museum-visit-delete:hover { color: var(--danger); background: var(--danger-light); }
+
+.museum-artworks { display: flex; flex-direction: column; gap: 4px; }
+.museum-artwork {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  margin: 0 -6px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background var(--transition);
+}
+.museum-artwork:hover { background: var(--bg-surface-2); }
+.museum-artwork:hover .museum-artwork-title { color: var(--accent); }
+.museum-artwork-cover {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--bg-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.museum-artwork-cover img { width: 100%; height: 100%; object-fit: cover; }
+.museum-artwork-info { min-width: 0; }
+.museum-artwork-title {
+  font-family: var(--font-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition);
+}
+.museum-artwork-artist { font-size: 12px; color: var(--text-secondary); }
+
+/* Artwork detail → map link */
+.artwork-museum-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 0.25rem;
+  transition: color var(--transition);
+}
+.artwork-museum-link:hover { color: var(--accent); }
+
+/* Leaflet, restyled to the app's surfaces */
+.museum-map-canvas.leaflet-container {
+  background: var(--bg-surface-2);
+  font-family: var(--font-sans);
+}
+/* Warm the neutral grey basemap toward the cream/terracotta palette */
+.museum-map-canvas .leaflet-tile-pane { filter: sepia(0.22) saturate(0.85); }
+[data-theme='dark'] .museum-map-canvas .leaflet-tile-pane { filter: sepia(0.3) brightness(0.92); }
+
+.museum-map-canvas.leaflet-container .leaflet-bar {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+.museum-map-canvas.leaflet-container .leaflet-bar a {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-bottom-color: var(--border);
+  transition: background var(--transition), color var(--transition);
+}
+.museum-map-canvas.leaflet-container .leaflet-bar a:hover { background: var(--bg-surface-2); color: var(--accent); }
+.museum-map-canvas.leaflet-container .leaflet-bar a.leaflet-disabled { color: var(--text-muted); background: var(--bg-surface); }
+
+.museum-map-canvas.leaflet-container .leaflet-control-attribution {
+  background: var(--bg-glass);
+  color: var(--text-muted);
+  font-size: 10px;
+  border-top-left-radius: 6px;
+}
+.museum-map-canvas.leaflet-container .leaflet-control-attribution a { color: var(--text-secondary); }
+
+.museum-marker {
+  background: var(--status-color);
+  border: 2px solid var(--bg-surface);
+  border-radius: 50%;
+  opacity: 0.9;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(42, 32, 25, 0.25);
+  /* No transform here: Leaflet positions markers with it */
+  transition: opacity var(--transition), box-shadow var(--transition);
+}
+.museum-marker:hover { opacity: 1; box-shadow: 0 0 0 4px color-mix(in srgb, var(--status-color) 30%, transparent); }
+.museum-marker--selected { opacity: 1; border-color: var(--text-primary); border-width: 2.5px; }
+
+.leaflet-tooltip.museum-tooltip {
+  background: var(--bg-glass-strong);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+.leaflet-tooltip-top.museum-tooltip::before { border-top-color: var(--bg-glass-strong); }
+
+@media (max-width: 900px) {
+  .museum-map-layout { grid-template-columns: 1fr; height: auto; }
+  .museum-map-frame { height: 56vh; min-height: 340px; }
+  .museum-map-side { overflow: visible; }
+}

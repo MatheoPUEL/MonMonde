@@ -30,6 +30,11 @@
   --success: #5b7a5b;
   --success-light: rgba(91, 122, 91, 0.14);
 
+  /* Museum map markers */
+  --map-visited: #5b7a5b;
+  --map-wishlist: #5f7894;
+  --map-artworks: var(--accent);
+
   --shadow-soft: 0 4px 24px rgba(42, 32, 25, 0.08);
   --shadow-medium: 0 8px 32px rgba(42, 32, 25, 0.14);
 
@@ -69,6 +74,9 @@
 
   --danger: #e08066;
   --danger-light: rgba(224, 128, 102, 0.14);
+
+  --map-visited: #8fb08a;
+  --map-wishlist: #8fa8c4;
 
   --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.22);
   --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.3);

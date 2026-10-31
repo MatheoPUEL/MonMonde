@@ -110,6 +110,27 @@ function mapCitation(c: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapMuseum(m: any) {
+  return {
+    name: m.name,
+    city: m.city,
+    country: m.country,
+    latitude: m.latitude,
+    longitude: m.longitude,
+    wikidataId: m.wikidataId,
+    wishlist: m.wishlist,
+    visits: m.visits.map((v: any) => ({ date: v.date.toISOString(), note: v.note })),
+  }
+}
+
+// Museums are only worth exporting when they carry user data; the rest are rebuilt from artworks.
+const museumsWithUserData = (userId: string) => prisma.museum.findMany({
+  where: { userId, OR: [{ wishlist: true }, { visits: { some: {} } }] },
+  include: { visits: { orderBy: { date: 'asc' } } },
+  orderBy: { name: 'asc' },
+})
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapArtwork(a: any) {
   return {
     id: a.id,
@@ -240,12 +261,14 @@ router.get('/art', async (req, res, next) => {
       include: { tags: true, notes: true, media: true, artist: true },
       orderBy: { createdAt: 'asc' },
     })
+    const museums = await museumsWithUserData(userId)
 
     res.json({
       exportedAt: now(),
       version: '1',
       module: 'art',
       artworks: artworks.map(mapArtwork),
+      museums: museums.map(mapMuseum),
     })
   } catch (err) { next(err) }
 })
@@ -254,12 +277,13 @@ router.get('/all', async (req, res, next) => {
   try {
     const userId = req.user!.id
 
-    const [entries, books, routines, citations, artworks] = await Promise.all([
+    const [entries, books, routines, citations, artworks, museums] = await Promise.all([
       prisma.journalEntry.findMany({ where: { userId }, include: { tags: true }, orderBy: { createdAt: 'asc' } }),
       prisma.book.findMany({ where: { userId }, include: { tags: true, notes: true }, orderBy: { createdAt: 'asc' } }),
       prisma.routine.findMany({ where: { userId }, include: { completions: { orderBy: { date: 'asc' } } }, orderBy: { createdAt: 'asc' } }),
       prisma.citation.findMany({ where: { userId }, include: { tags: true }, orderBy: { createdAt: 'asc' } }),
       prisma.artwork.findMany({ where: { userId }, include: { tags: true, notes: true, media: true, artist: true }, orderBy: { createdAt: 'asc' } }),
+      museumsWithUserData(userId),
     ])
 
     res.json({
@@ -270,7 +294,7 @@ router.get('/all', async (req, res, next) => {
       reading: { books: books.map(mapBook) },
       routines: { routines: routines.map(mapRoutine) },
       citations: { citations: citations.map(mapCitation) },
-      art: { artworks: artworks.map(mapArtwork) },
+      art: { artworks: artworks.map(mapArtwork), museums: museums.map(mapMuseum) },
     })
   } catch (err) { next(err) }
 })

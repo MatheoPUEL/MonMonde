@@ -233,3 +233,82 @@ export const artistsApi = {
       body: JSON.stringify({ wikidataId }),
     }),
 }
+
+export type MuseumStatus = 'visited' | 'wishlist' | 'artworks'
+
+export interface MuseumVisit {
+  id: string
+  museumId: string
+  date: string
+  note?: string
+  createdAt: string
+}
+
+export interface Museum {
+  id: string
+  name: string
+  city?: string
+  country?: string
+  latitude?: number
+  longitude?: number
+  wikidataId?: string
+  wishlist: boolean
+  status: MuseumStatus
+  artworkCount: number
+  visitCount: number
+  lastVisitAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MuseumDetail extends Museum {
+  visits: MuseumVisit[]
+  artworks: Artwork[]
+}
+
+export interface WikidataMuseumCandidate {
+  wikidataId: string
+  name: string
+  description?: string
+}
+
+export const museumsApi = {
+  getAll: () =>
+    apiClient<{ museums: Museum[]; pending: number }>('/api/art/museums'),
+
+  getOne: (id: string) =>
+    apiClient<{ museum: MuseumDetail }>(`/api/art/museums/${id}`),
+
+  create: (data: { name: string; wishlist?: boolean; visitDate?: string }) =>
+    apiClient<{ museum: MuseumDetail }>('/api/art/museums', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: { wishlist?: boolean }) =>
+    apiClient<{ museum: MuseumDetail }>(`/api/art/museums/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiClient<{ ok: boolean }>(`/api/art/museums/${id}`, { method: 'DELETE' }),
+
+  addVisit: (id: string, data: { date: string; note?: string }) =>
+    apiClient<{ museum: MuseumDetail }>(`/api/art/museums/${id}/visits`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  deleteVisit: (id: string, visitId: string) =>
+    apiClient<{ museum: MuseumDetail }>(`/api/art/museums/${id}/visits/${visitId}`, { method: 'DELETE' }),
+
+  getLocateCandidates: (id: string) =>
+    apiClient<{ candidates: WikidataMuseumCandidate[] }>(`/api/art/museums/${id}/locate/candidates`),
+
+  locate: (id: string, wikidataId: string) =>
+    apiClient<{ museum: MuseumDetail }>(`/api/art/museums/${id}/locate`, {
+      method: 'POST',
+      body: JSON.stringify({ wikidataId }),
+    }),
+}

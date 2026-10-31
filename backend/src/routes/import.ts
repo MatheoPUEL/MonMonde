@@ -252,10 +252,11 @@ router.post('/citations', async (req, res, next) => {
 router.post('/art', async (req, res, next) => {
   try {
     const userId = req.user!.id
-    const body = req.body as { version?: string; artworks?: Record<string, unknown>[] }
+    const body = req.body as { version?: string; artworks?: Record<string, unknown>[]; museums?: Record<string, unknown>[] }
 
     if (!validateVersion(body as Record<string, unknown>, res)) return
     const artworks = body.artworks ?? []
+    const museums = body.museums ?? []
 
     let imported = 0
     let skipped = 0
@@ -326,6 +327,39 @@ router.post('/art', async (req, res, next) => {
           },
         })
         imported++
+      }
+
+      // Museums merge rather than skip: visits recorded on another install shouldn't be lost
+      for (const museum of museums) {
+        const name = (museum.name as string)?.trim()
+        if (!name) continue
+        const hasCoords = museum.latitude != null && museum.longitude != null
+        const saved = await tx.museum.upsert({
+          where: { userId_name: { userId, name } },
+          create: {
+            userId,
+            name,
+            city: (museum.city as string) ?? null,
+            country: (museum.country as string) ?? null,
+            latitude: hasCoords ? Number(museum.latitude) : null,
+            longitude: hasCoords ? Number(museum.longitude) : null,
+            wikidataId: (museum.wikidataId as string) ?? null,
+            geocodedAt: hasCoords ? new Date() : null,
+            wishlist: (museum.wishlist as boolean) ?? false,
+          },
+          update: museum.wishlist ? { wishlist: true } : {},
+          include: { visits: true },
+        })
+
+        const knownDates = new Set(saved.visits.map(v => v.date.toISOString()))
+        const visits = ((museum.visits as Record<string, unknown>[]) ?? [])
+          .filter(v => typeof v.date === 'string' && !isNaN(Date.parse(v.date)))
+          .filter(v => !knownDates.has(new Date(v.date as string).toISOString()))
+        if (visits.length) {
+          await tx.museumVisit.createMany({
+            data: visits.map(v => ({ museumId: saved.id, date: new Date(v.date as string), note: (v.note as string) ?? null })),
+          })
+        }
       }
     })
 

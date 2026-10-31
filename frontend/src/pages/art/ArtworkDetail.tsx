@@ -11,7 +11,7 @@ import { EditArtworkModal } from './EditArtworkModal'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
 import { Lightbox } from '../../components/ui/Lightbox'
 import { artworkInitials } from '../../components/art/artworkInitials'
-import { IconChevronLeft, IconEdit, IconStar, IconTrash, IconExpand } from '../../components/ui/icons'
+import { IconChevronLeft, IconEdit, IconStar, IconTrash, IconExpand, IconPin } from '../../components/ui/icons'
 
 export function ArtworkDetail() {
   const { id } = useParams<{ id: string }>()
@@ -145,7 +145,11 @@ export function ArtworkDetail() {
             {artwork.tags.map(t => <span key={t.id} className="chip">{t.name}</span>)}
           </div>
 
-          {artwork.museum && <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>{artwork.museum}</div>}
+          {artwork.museum && (
+            <Link to={`/art/map?name=${encodeURIComponent(artwork.museum)}`} className="artwork-museum-link" title="Voir sur la carte">
+              <IconPin size={12} /> {artwork.museum}
+            </Link>
+          )}
           {artwork.technique && <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{artwork.technique}{artwork.dimensions ? ` · ${artwork.dimensions}` : ''}</div>}
 
           <div className="routines-tabs" style={{ marginTop: '1.25rem' }}>

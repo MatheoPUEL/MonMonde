@@ -7,7 +7,7 @@ import { AddArtworkModal } from './AddArtworkModal'
 import { Button } from '../../components/ui/Button'
 import { ImportExportButtons } from '../../components/ui/ImportExportButtons'
 import { ArtistAutocomplete } from '../../components/art/ArtistAutocomplete'
-import { IconSearch, IconGrid, IconList, IconSort, IconArt, IconClose } from '../../components/ui/icons'
+import { IconSearch, IconGrid, IconList, IconSort, IconArt, IconClose, IconPin } from '../../components/ui/icons'
 
 type ViewMode = 'grid' | 'list'
 type SortKey = 'createdAt' | 'title' | 'year'
@@ -155,6 +155,9 @@ export function ArtGallery() {
           <ImportExportButtons module="art" onImportDone={fetchArtworks} />
           <Link to="/art/artists" className="btn btn-ghost" style={{ width: 'auto' }}>
             Artistes
+          </Link>
+          <Link to="/art/map" className="btn btn-ghost" style={{ width: 'auto' }}>
+            <IconPin size={14} /> Carte
           </Link>
           <Button onClick={() => setShowAddModal(true)} className="btn-add-book">
             + Ajouter une œuvre

@@ -3,6 +3,7 @@ import { ArtGallery } from './ArtGallery'
 import { ArtworkDetail } from './ArtworkDetail'
 import { ArtistsPage } from './ArtistsPage'
 import { ArtistDetail } from './ArtistDetail'
+import { MuseumMap } from './MuseumMap'
 
 export function ArtPage() {
   return (
@@ -10,6 +11,7 @@ export function ArtPage() {
       <Route index element={<ArtGallery />} />
       <Route path="artists" element={<ArtistsPage />} />
       <Route path="artists/:artistId" element={<ArtistDetail />} />
+      <Route path="map" element={<MuseumMap />} />
       <Route path=":id" element={<ArtworkDetail />} />
     </Routes>
   )
