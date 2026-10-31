@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../../middleware/auth'
 import { prisma } from '../../lib/prisma'
+import { capitalizeLabel } from '../../lib/knownMuseums'
 
 const router = Router()
 
@@ -341,7 +342,7 @@ async function worksByArtist(artistId: string, artistName: string): Promise<ArtS
       century: yearToCentury(year),
       currents: [],
       themes: [],
-      museum: b.collectionLabel?.value ?? 'Wikidata',
+      museum: b.collectionLabel ? capitalizeLabel(b.collectionLabel.value) : 'Wikidata',
       imageUrl: b.image ? `${b.image.value}?width=800` : undefined,
     })
     if (results.length >= 8) break
@@ -426,7 +427,7 @@ async function searchWikidata(q: string): Promise<SourceResult> {
         medium: materialId ? labelsById[materialId] : undefined,
         dimensions,
         country: undefined,
-        museum: collectionId ? (labelsById[collectionId] ?? 'Wikidata') : 'Wikidata',
+        museum: collectionId && labelsById[collectionId] ? capitalizeLabel(labelsById[collectionId]) : 'Wikidata',
         imageUrl: imageFilename ? wdImageUrl(imageFilename) : undefined,
       }
     })

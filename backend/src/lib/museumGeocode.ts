@@ -4,6 +4,8 @@ export interface MuseumLocation {
   city?: string
   country?: string
   wikidataId?: string
+  /** Wikidata's label for the matched entity, as returned (French labels are often lowercase) */
+  name?: string
 }
 
 export interface MuseumCandidate {
@@ -123,9 +125,9 @@ async function geocodeWithNominatim(name: string): Promise<MuseumLocation | null
  *  OpenStreetMap as a fallback for small institutions Wikidata doesn't geolocate.
  *  Resolves null when nothing matches; throws GeocodeUnavailableError when a service is down. */
 export async function geocodeMuseum(name: string): Promise<MuseumLocation | null> {
-  const ids = (await searchWikidata(name, 5)).map(s => s.id)
-  const located = await locateEntities(ids)
-  const best = ids.find(id => located.has(id))
-  if (best) return located.get(best)!
+  const hits = await searchWikidata(name, 5)
+  const located = await locateEntities(hits.map(s => s.id))
+  const best = hits.find(s => located.has(s.id))
+  if (best) return { ...located.get(best.id)!, name: best.label }
   return geocodeWithNominatim(name)
 }

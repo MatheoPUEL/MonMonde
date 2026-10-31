@@ -92,7 +92,7 @@ export function MuseumAutocomplete({ value, selected, onChange, autoFocus }: Pro
         {selected
           ? <>Placé automatiquement{place(selected) ? ` · ${place(selected)}` : ''}</>
           : value.trim().length >= 2
-            ? 'Pas dans la liste ? Garde ton nom, il sera localisé automatiquement.'
+            ? 'Pas dans la liste ? Garde ton nom : il sera localisé et son orthographe corrigée automatiquement.'
             : 'Commence à taper pour voir les grands musées.'}
       </p>
     </div>

@@ -25,6 +25,11 @@ export function normalize(text: string): string {
     .trim()
 }
 
+/** French Wikidata labels are lowercase by convention ("musée Fabre") — not how a name is written. */
+export function capitalizeLabel(label: string): string {
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 const indexed = (museums as KnownMuseum[]).map(museum => ({
   museum,
   names: museum.names.map(normalize),
@@ -64,12 +69,23 @@ const GENERIC_WORDS = new Set([
   'de', 'du', 'des', 'd', 'la', 'le', 'les', 'l', 'of', 'the', 'and', 'et', 'art', 'arts',
 ])
 
+function significantWords(q: string): string[] {
+  const all = q.split(' ')
+  const significant = all.filter(w => !GENERIC_WORDS.has(w))
+  return significant.length ? significant : all
+}
+
+/** Whether a looked-up name plausibly is what the user typed ("les invalides" → "hôtel des Invalides"),
+ *  so it can replace their spelling without renaming the museum to something unrelated. */
+export function nameMatches(typed: string, name: string): boolean {
+  const q = normalize(typed)
+  return !!q && score([normalize(name)], q, significantWords(q)) > 0
+}
+
 export function suggestMuseums(query: string, limit = 8): MuseumSuggestion[] {
   const q = normalize(query)
   if (q.length < 2) return []
-  const all = q.split(' ')
-  const significant = all.filter(w => !GENERIC_WORDS.has(w))
-  const words = significant.length ? significant : all
+  const words = significantWords(q)
   return indexed
     .map(({ museum, names }, rank) => ({ museum, rank, score: score(names, q, words) }))
     .filter(r => r.score > 0)

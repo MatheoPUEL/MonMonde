@@ -205,6 +205,33 @@ describe('known museums list', () => {
   })
 })
 
+describe('official museum names', () => {
+  it('files a typed name found in the list under its official spelling', async () => {
+    const res = await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'musee du louvre' })
+    expect(res.body.museum).toMatchObject({ name: 'Musée du Louvre', wikidataId: 'Q19675' })
+    expect(mocked.geocodeMuseum).not.toHaveBeenCalled()
+  })
+
+  it('uses the capitalized Wikidata label of the museum it was located at', async () => {
+    mocked.geocodeMuseum.mockResolvedValue({ latitude: 48.85, longitude: 2.31, wikidataId: 'Q188977', name: 'hôtel des Invalides' })
+    const res = await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'les invalides' })
+    expect(res.body.museum).toMatchObject({ name: 'Hôtel des Invalides', wikidataId: 'Q188977' })
+  })
+
+  it('keeps the typed name when the located place looks like something else', async () => {
+    mocked.geocodeMuseum.mockResolvedValue({ latitude: 48.85, longitude: 2.31, wikidataId: 'Q1', name: 'gare de Lyon' })
+    const res = await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'Petite galerie de quartier' })
+    expect(res.body.museum.name).toBe('Petite galerie de quartier')
+  })
+
+  it('keeps a name already used on artworks, which are linked to the museum by it', async () => {
+    await addArtwork('Œuvre', 'les invalides')
+    mocked.geocodeMuseum.mockResolvedValue({ latitude: 48.85, longitude: 2.31, wikidataId: 'Q188977', name: 'hôtel des Invalides' })
+    const res = await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'les invalides', visitDate: '2026-01-10' })
+    expect(res.body.museum).toMatchObject({ name: 'les invalides', artworkCount: 1, status: 'visited' })
+  })
+})
+
 describe('POST /api/art/museums/:id/locate', () => {
   it('moves the museum to the picked Wikidata entity', async () => {
     const { body } = await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'Met' })
