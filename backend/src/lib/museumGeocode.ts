@@ -52,7 +52,7 @@ async function searchWikidata(name: string, limit: number) {
 const CITY_TYPES = ['Q515', 'Q1549591', 'Q5119', 'Q1637706', 'Q200250'].map(q => `wd:${q}`).join(' ')
 
 /** Locates every given entity in one SPARQL query; entities without coordinates are absent. */
-async function locateEntities(ids: string[]): Promise<Map<string, MuseumLocation>> {
+export async function locateEntities(ids: string[]): Promise<Map<string, MuseumLocation>> {
   const located = new Map<string, MuseumLocation>()
   if (!ids.length) return located
 

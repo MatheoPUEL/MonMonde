@@ -42,8 +42,8 @@ const addArtwork = (title: string, museum?: string) =>
 
 describe('GET /api/art/museums', () => {
   it('derives museums from artworks, geocodes them once and counts artworks', async () => {
-    await addArtwork('Nymphéas', 'Musée de l\'Orangerie')
-    await addArtwork('Impression', 'Musée de l\'Orangerie')
+    await addArtwork('Nymphéas', 'Musée de Testville')
+    await addArtwork('Impression', 'Musée de Testville')
     await addArtwork('Sans lieu')
     await addArtwork('Inconnu', 'Wikidata')
 
@@ -51,7 +51,7 @@ describe('GET /api/art/museums', () => {
     expect(res.status).toBe(200)
     expect(res.body.museums).toHaveLength(1)
     expect(res.body.museums[0]).toMatchObject({
-      name: 'Musée de l\'Orangerie', status: 'artworks', artworkCount: 2, visitCount: 0, latitude: 48.86, city: 'Paris',
+      name: 'Musée de Testville', status: 'artworks', artworkCount: 2, visitCount: 0, latitude: 48.86, city: 'Paris',
     })
 
     await request(app).get('/api/art/museums').set('Cookie', cookie)
@@ -71,11 +71,11 @@ describe('GET /api/art/museums', () => {
 
   it('leaves a museum pending when the lookup service is down, then retries it', async () => {
     mocked.geocodeMuseum.mockRejectedValueOnce(new geocode.GeocodeUnavailableError('429'))
-    await addArtwork('Œuvre', 'Rijksmuseum')
+    await addArtwork('Œuvre', 'Musée municipal de Testville')
 
     const down = await request(app).get('/api/art/museums').set('Cookie', cookie)
     expect(down.status).toBe(200)
-    expect(down.body.museums[0]).toMatchObject({ name: 'Rijksmuseum', latitude: null })
+    expect(down.body.museums[0]).toMatchObject({ name: 'Musée municipal de Testville', latitude: null })
     expect(down.body.pending).toBe(0)
 
     const up = await request(app).get('/api/art/museums').set('Cookie', cookie)
@@ -160,6 +160,51 @@ describe('GET /api/art/museums/:id', () => {
   })
 })
 
+describe('known museums list', () => {
+  it('suggests notable museums ignoring accents, case and language', async () => {
+    const res = await request(app).get('/api/art/museums/suggest?q=musee d orsay').set('Cookie', cookie)
+    expect(res.status).toBe(200)
+    expect(res.body.suggestions[0]).toMatchObject({ name: 'Musée d\'Orsay', city: 'Paris', wikidataId: 'Q23402' })
+    expect(res.body.suggestions[0].names).toBeUndefined()
+
+    const english = await request(app).get('/api/art/museums/suggest?q=uffizi').set('Cookie', cookie)
+    expect(english.body.suggestions[0].wikidataId).toBe('Q51252')
+
+    // "musée" isn't part of the Offices' own name, but shouldn't prevent the match
+    const generic = await request(app).get('/api/art/museums/suggest?q=musee des offices').set('Cookie', cookie)
+    expect(generic.body.suggestions[0].wikidataId).toBe('Q51252')
+
+    const short = await request(app).get('/api/art/museums/suggest?q=m').set('Cookie', cookie)
+    expect(short.body.suggestions).toEqual([])
+  })
+
+  it('places a picked suggestion straight from the list, without a lookup', async () => {
+    const res = await request(app).post('/api/art/museums').set('Cookie', cookie)
+      .send({ name: 'Musée du Louvre', wikidataId: 'Q19675', wishlist: true })
+    expect(res.status).toBe(201)
+    expect(res.body.museum).toMatchObject({ name: 'Musée du Louvre', city: 'Paris', wikidataId: 'Q19675', status: 'wishlist' })
+    expect(res.body.museum.latitude).toBeCloseTo(48.86, 1)
+    expect(mocked.geocodeMuseum).not.toHaveBeenCalled()
+  })
+
+  it('reuses a museum already on the map under another spelling', async () => {
+    await addArtwork('Joconde', 'Louvre Museum')
+    const list = await request(app).get('/api/art/museums').set('Cookie', cookie)
+    expect(list.body.museums[0]).toMatchObject({ name: 'Louvre Museum', wikidataId: 'Q19675' })
+    expect(mocked.geocodeMuseum).not.toHaveBeenCalled()
+
+    const res = await request(app).post('/api/art/museums').set('Cookie', cookie)
+      .send({ name: 'Musée du Louvre', wikidataId: 'Q19675', visitDate: '2026-01-10' })
+    expect(res.body.museum).toMatchObject({ id: list.body.museums[0].id, status: 'visited', artworkCount: 1 })
+  })
+
+  it('still geocodes a free-text name that is not in the list', async () => {
+    const res = await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'Petite galerie de quartier' })
+    expect(res.body.museum.latitude).toBe(48.86)
+    expect(mocked.geocodeMuseum).toHaveBeenCalledWith('Petite galerie de quartier')
+  })
+})
+
 describe('POST /api/art/museums/:id/locate', () => {
   it('moves the museum to the picked Wikidata entity', async () => {
     const { body } = await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'Met' })
@@ -182,7 +227,7 @@ describe('POST /api/art/museums/:id/locate', () => {
 
 describe('export / import', () => {
   it('round-trips visits and wishlist through the art export', async () => {
-    await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'Uffizi', visitDate: '2025-05-12' })
+    await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'Galerie Imaginaire', visitDate: '2025-05-12' })
     await request(app).post('/api/art/museums').set('Cookie', cookie).send({ name: 'Prado', wishlist: true })
 
     const exported = await request(app).get('/api/export/art').set('Cookie', cookie)
@@ -195,7 +240,7 @@ describe('export / import', () => {
 
     const list = await request(app).get('/api/art/museums').set('Cookie', cookie)
     const byName = Object.fromEntries(list.body.museums.map((m: { name: string }) => [m.name, m]))
-    expect(byName.Uffizi).toMatchObject({ status: 'visited', visitCount: 1, latitude: 48.86 })
+    expect(byName['Galerie Imaginaire']).toMatchObject({ status: 'visited', visitCount: 1, latitude: 48.86 })
     expect(byName.Prado).toMatchObject({ status: 'wishlist' })
   })
 })

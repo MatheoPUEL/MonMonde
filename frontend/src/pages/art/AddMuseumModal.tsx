@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { museumsApi, MuseumDetail } from '../../api/art'
+import { museumsApi, MuseumDetail, MuseumSuggestion } from '../../api/art'
+import { MuseumAutocomplete } from '../../components/art/MuseumAutocomplete'
 import { GlassCard } from '../../components/ui/GlassCard'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
@@ -18,6 +19,7 @@ export function AddMuseumModal({ onClose, onAdded }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [name, setName] = useState('')
+  const [suggestion, setSuggestion] = useState<MuseumSuggestion | null>(null)
   const [kind, setKind] = useState<Kind>('visited')
   const [visitDate, setVisitDate] = useState(todayIso)
 
@@ -32,9 +34,11 @@ export function AddMuseumModal({ onClose, onAdded }: Props) {
     setLoading(true)
     setError('')
     try {
-      const { museum } = await museumsApi.create(
-        kind === 'visited' ? { name, visitDate } : { name, wishlist: true }
-      )
+      const { museum } = await museumsApi.create({
+        name,
+        wikidataId: suggestion?.wikidataId,
+        ...(kind === 'visited' ? { visitDate } : { wishlist: true }),
+      })
       onAdded(museum)
     } catch (err) {
       setError((err as Error).message)
@@ -51,14 +55,15 @@ export function AddMuseumModal({ onClose, onAdded }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="add-form">
-          <Input
-            label="Nom du musée *"
-            placeholder="Musée d'Orsay, Prado, Tate Modern…"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            autoFocus
-            required
-          />
+          <div className="input-group">
+            <label className="input-label">Nom du musée *</label>
+            <MuseumAutocomplete
+              value={name}
+              selected={suggestion}
+              onChange={(value, picked) => { setName(value); setSuggestion(picked) }}
+              autoFocus
+            />
+          </div>
 
           <div className="input-group">
             <label className="input-label">Statut</label>

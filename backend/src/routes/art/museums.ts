@@ -5,6 +5,7 @@ import { prisma } from '../../lib/prisma'
 import {
   geocodeMuseum, locateMuseumByWikidataId, searchMuseumCandidates, GeocodeUnavailableError,
 } from '../../lib/museumGeocode'
+import { KnownMuseum, knownMuseumById, knownMuseumByName, suggestMuseums } from '../../lib/knownMuseums'
 
 const router = Router()
 
@@ -44,7 +45,8 @@ async function artworkCountsByMuseum(userId: string): Promise<Map<string, number
 /** Saves the lookup result — including "not found", so it isn't retried on every load.
  *  A service outage propagates instead, leaving the museum pending for a later attempt. */
 async function geocodeAndSave(museum: Museum): Promise<Museum> {
-  const location = await geocodeMuseum(museum.name)
+  // Notable museums are already placed in the bundled list — no lookup needed
+  const location = knownMuseumByName(museum.name) ?? await geocodeMuseum(museum.name)
   return prisma.museum.update({
     where: { id: museum.id },
     data: {
@@ -58,6 +60,17 @@ async function geocodeAndSave(museum: Museum): Promise<Museum> {
       }),
     },
   })
+}
+
+function placement(known: KnownMuseum) {
+  return {
+    latitude: known.latitude,
+    longitude: known.longitude,
+    city: known.city ?? null,
+    country: known.country ?? null,
+    wikidataId: known.wikidataId,
+    geocodedAt: new Date(),
+  }
 }
 
 async function findOwned(id: string, userId: string) {
@@ -126,6 +139,11 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// GET /api/art/museums/suggest?q= — notable museums matching what the user is typing
+router.get('/suggest', (req, res) => {
+  res.json({ suggestions: suggestMuseums(String(req.query.q ?? '')) })
+})
+
 router.get('/:id', async (req, res, next) => {
   try {
     const museum = await detail(req.params.id, req.user!.id)
@@ -134,20 +152,29 @@ router.get('/:id', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-// POST /api/art/museums — add a museum by hand (visited or to visit), even with no artworks there
+// POST /api/art/museums — add a museum by hand (visited or to visit), even with no artworks there.
+// With the wikidataId of a suggestion, the museum is placed from the bundled list right away.
 router.post('/', async (req, res, next) => {
   try {
     const userId = req.user!.id
-    const { name, wishlist, visitDate } = req.body as { name?: string; wishlist?: boolean; visitDate?: string }
+    const { name, wishlist, visitDate, wikidataId } =
+      req.body as { name?: string; wishlist?: boolean; visitDate?: string; wikidataId?: string }
     const trimmed = name?.trim()
     if (!trimmed) { res.status(400).json({ error: 'name is required' }); return }
     if (visitDate && isNaN(Date.parse(visitDate))) { res.status(400).json({ error: 'Invalid visitDate' }); return }
 
-    let museum = await prisma.museum.upsert({
-      where: { userId_name: { userId, name: trimmed } },
-      create: { userId, name: trimmed, wishlist: !visitDate && !!wishlist },
-      update: wishlist !== undefined && !visitDate ? { wishlist } : {},
-    })
+    const known = wikidataId ? knownMuseumById(wikidataId) : undefined
+    const wishlistUpdate = wishlist !== undefined && !visitDate ? { wishlist } : {}
+    // Already on the map under another spelling (e.g. the one on an artwork): reuse that museum
+    const sameEntity = known && await prisma.museum.findFirst({ where: { userId, wikidataId: known.wikidataId } })
+
+    let museum = sameEntity
+      ? await prisma.museum.update({ where: { id: sameEntity.id }, data: wishlistUpdate })
+      : await prisma.museum.upsert({
+        where: { userId_name: { userId, name: trimmed } },
+        create: { userId, name: trimmed, wishlist: !visitDate && !!wishlist, ...(known && placement(known)) },
+        update: { ...wishlistUpdate, ...(known && placement(known)) },
+      })
     if (!museum.geocodedAt) {
       try {
         museum = await geocodeAndSave(museum)

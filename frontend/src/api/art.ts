@@ -267,6 +267,15 @@ export interface MuseumDetail extends Museum {
   artworks: Artwork[]
 }
 
+export interface MuseumSuggestion {
+  wikidataId: string
+  name: string
+  city?: string
+  country?: string
+  latitude: number
+  longitude: number
+}
+
 export interface WikidataMuseumCandidate {
   wikidataId: string
   name: string
@@ -280,7 +289,10 @@ export const museumsApi = {
   getOne: (id: string) =>
     apiClient<{ museum: MuseumDetail }>(`/api/art/museums/${id}`),
 
-  create: (data: { name: string; wishlist?: boolean; visitDate?: string }) =>
+  suggest: (q: string) =>
+    apiClient<{ suggestions: MuseumSuggestion[] }>(`/api/art/museums/suggest?q=${encodeURIComponent(q)}`),
+
+  create: (data: { name: string; wikidataId?: string; wishlist?: boolean; visitDate?: string }) =>
     apiClient<{ museum: MuseumDetail }>('/api/art/museums', {
       method: 'POST',
       body: JSON.stringify(data),

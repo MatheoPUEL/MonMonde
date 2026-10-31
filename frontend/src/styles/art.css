@@ -535,3 +535,32 @@
   .museum-map-frame { height: 56vh; min-height: 340px; }
   .museum-map-side { overflow: visible; }
 }
+
+/* Museum name suggestions (Ajouter un musée) */
+.museum-suggestions { max-height: 300px; overflow-y: auto; }
+.museum-suggestion--active { background: var(--bg-surface-2); }
+.museum-suggestion--active .museum-suggestion-name { color: var(--accent); }
+.museum-suggestion-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.museum-suggestion-info { display: flex; flex-direction: column; min-width: 0; }
+.museum-suggestion-name {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--transition);
+}
+.museum-suggestion-place { font-size: 12px; color: var(--text-muted); }
+.museum-suggestion-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
