@@ -858,7 +858,10 @@ body {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: color var(--transition);
 }
+
+.widget-citation-link:hover .widget-citation-text p { color: var(--accent); }
 
 .widget-citation-footer {
   display: flex;
@@ -871,7 +874,10 @@ body {
   font-size: 0.8rem;
   color: var(--text-secondary);
   font-weight: 500;
+  transition: color var(--transition);
 }
+
+.widget-citation-link:hover .widget-citation-author { color: var(--accent); }
 
 .widget-citation-source { font-size: 1rem; }
 
@@ -921,6 +927,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 2px;
+  transition: color var(--transition);
 }
 
 .widget-reading-item:hover .widget-reading-item-title { color: var(--accent); }
@@ -980,6 +987,7 @@ body {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: color var(--transition);
 }
 
 .widget-art-link:hover .widget-art-title { color: var(--accent); }
