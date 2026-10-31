@@ -2,7 +2,7 @@ import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 
-const COVERS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads', 'covers')
+export const COVERS_DIR = process.env.UPLOADS_DIR || path.join(process.cwd(), 'uploads', 'covers')
 export const AVATARS_DIR = path.join(
   process.env.UPLOADS_DIR ? path.dirname(process.env.UPLOADS_DIR) : path.join(process.cwd(), 'uploads'),
   'avatars'

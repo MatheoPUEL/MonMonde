@@ -62,6 +62,7 @@ model Book {
   genres        String[]
   coverUrl      String?
   coverType     String?
+  coverSourceUrl String?
   googleBooksId String?
 
   status        ReadingStatus @default(WISHLIST)
@@ -386,6 +387,7 @@ model Artwork {
 
   coverUrl    String?
   coverType   String?
+  coverSourceUrl String?
   sourceApi   String?
   sourceId    String?
   sourceUrl   String?

@@ -12,6 +12,7 @@ import { CitationForm } from '../../components/citations/CitationForm'
 import { EditBookModal } from './EditBookModal'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
 import { bookInitials } from '../../components/reading/bookInitials'
+import { CoverImage } from '../../components/ui/CoverImage'
 import { IconChevronLeft, IconEdit, IconStar, IconRedo, IconTrash, IconClose } from '../../components/ui/icons'
 
 export function BookDetail() {
@@ -103,9 +104,14 @@ export function BookDetail() {
         <div className="book-detail-left">
           <div className="book-detail-cover-wrap">
             <div className="book-detail-cover">
-              {book.coverUrl ? <img src={book.coverUrl} alt={book.title} /> : (
-                <span className="book-cover-initials book-cover-initials--lg">{bookInitials(book.title)}</span>
-              )}
+              <CoverImage
+                kind="book"
+                id={book.id}
+                src={book.coverUrl}
+                alt={book.title}
+                fallback={<span className="book-cover-initials book-cover-initials--lg">{bookInitials(book.title)}</span>}
+                onRecovered={coverUrl => setBook(b => (b ? { ...b, coverUrl } : b))}
+              />
             </div>
           </div>
 

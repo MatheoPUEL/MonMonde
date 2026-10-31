@@ -5,6 +5,7 @@ import { EnrichPickerModal } from '../ui/EnrichPickerModal'
 import { ConfirmModal } from '../ui/ConfirmModal'
 import { IconChevronLeft, IconClose, IconPin, IconStar, IconTrash, IconCheck } from '../ui/icons'
 import { artworkInitials } from './artworkInitials'
+import { CoverImage } from '../ui/CoverImage'
 import { MUSEUM_STATUS_LABELS, todayIso } from './museumStatus'
 
 interface Props {
@@ -187,9 +188,14 @@ export function MuseumPanel({ museum, onBack, onChanged, onDeleted }: Props) {
             {museum.artworks.map(a => (
               <Link key={a.id} to={`/art/${a.id}`} className="museum-artwork">
                 <div className="museum-artwork-cover">
-                  {a.coverUrl
-                    ? <img src={a.coverUrl} alt={a.title} loading="lazy" />
-                    : <span className="artwork-cover-initials artwork-cover-initials--sm">{artworkInitials(a.title)}</span>}
+                  <CoverImage
+                    kind="artwork"
+                    id={a.id}
+                    src={a.coverUrl}
+                    alt={a.title}
+                    loading="lazy"
+                    fallback={<span className="artwork-cover-initials artwork-cover-initials--sm">{artworkInitials(a.title)}</span>}
+                  />
                 </div>
                 <div className="museum-artwork-info">
                   <div className="museum-artwork-title">{a.title}</div>

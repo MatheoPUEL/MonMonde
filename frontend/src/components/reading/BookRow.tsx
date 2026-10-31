@@ -4,6 +4,7 @@ import { BookStatusBadge } from './BookStatusBadge'
 import { ProgressBar } from './ProgressBar'
 import { StarRating } from './StarRating'
 import { bookInitials } from './bookInitials'
+import { CoverImage } from '../ui/CoverImage'
 
 export function BookRow({ book }: { book: Book }) {
   const navigate = useNavigate()
@@ -11,9 +12,14 @@ export function BookRow({ book }: { book: Book }) {
   return (
     <div className="book-row" onClick={() => navigate(`/reading/${book.id}`)}>
       <div className="book-row-cover">
-        {book.coverUrl ? (
-          <img src={book.coverUrl} alt={book.title} loading="lazy" />
-        ) : <span className="book-cover-initials book-cover-initials--sm">{bookInitials(book.title)}</span>}
+        <CoverImage
+          kind="book"
+          id={book.id}
+          src={book.coverUrl}
+          alt={book.title}
+          loading="lazy"
+          fallback={<span className="book-cover-initials book-cover-initials--sm">{bookInitials(book.title)}</span>}
+        />
       </div>
       <div className="book-row-info">
         <div className="book-row-title">{book.title}</div>

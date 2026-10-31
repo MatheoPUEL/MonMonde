@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { artApi, Artwork } from '../../api/art'
 import { artworkInitials } from '../art/artworkInitials'
 import { IconArt } from '../ui/icons'
+import { CoverImage } from '../ui/CoverImage'
 
 function pickRandom<T>(arr: T[]): T | null {
   if (arr.length === 0) return null
@@ -34,10 +35,13 @@ export function WidgetOeuvre() {
       ) : artwork ? (
         <Link to={`/art/${artwork.id}`} className="widget-art-link">
           <div className="widget-art-image">
-            {artwork.coverUrl
-              ? <img src={artwork.coverUrl} alt={artwork.title} />
-              : <span className="widget-art-initials">{artworkInitials(artwork.title)}</span>
-            }
+            <CoverImage
+              kind="artwork"
+              id={artwork.id}
+              src={artwork.coverUrl}
+              alt={artwork.title}
+              fallback={<span className="widget-art-initials">{artworkInitials(artwork.title)}</span>}
+            />
           </div>
           <div className="widget-art-title">{artwork.title}</div>
           <div className="widget-art-artist">

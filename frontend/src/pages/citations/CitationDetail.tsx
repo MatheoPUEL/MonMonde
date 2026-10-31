@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { citationsApi, type Citation, SOURCE_TYPE_LABELS } from '../../api/citations'
 import { CitationForm } from '../../components/citations/CitationForm'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
+import { CoverImage } from '../../components/ui/CoverImage'
 import { SOURCE_TYPE_ICONS, IconStar, IconChevronLeft, IconChevronRight, IconReading, IconArt } from '../../components/ui/icons'
 
 export function CitationDetail() {
@@ -107,9 +108,14 @@ export function CitationDetail() {
           <div className="citation-detail-section-title">Livre lié</div>
           <Link to={`/reading/${citation.book.id}`} className="citation-detail-book-link">
             <div className="citation-detail-book-cover">
-              {citation.book.coverUrl
-                ? <img src={citation.book.coverUrl} alt={citation.book.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3 }} />
-                : <IconReading size={16} />}
+              <CoverImage
+                kind="book"
+                id={citation.book.id}
+                src={citation.book.coverUrl}
+                alt={citation.book.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3 }}
+                fallback={<IconReading size={16} />}
+              />
             </div>
             <div className="citation-detail-book-info">
               <div className="citation-detail-book-title">{citation.book.title}</div>
@@ -125,9 +131,14 @@ export function CitationDetail() {
           <div className="citation-detail-section-title">Œuvre liée</div>
           <Link to={`/art/${citation.artwork.id}`} className="citation-detail-book-link">
             <div className="citation-detail-book-cover">
-              {citation.artwork.coverUrl
-                ? <img src={citation.artwork.coverUrl} alt={citation.artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3 }} />
-                : <IconArt size={16} />}
+              <CoverImage
+                kind="artwork"
+                id={citation.artwork.id}
+                src={citation.artwork.coverUrl}
+                alt={citation.artwork.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 3 }}
+                fallback={<IconArt size={16} />}
+              />
             </div>
             <div className="citation-detail-book-info">
               <div className="citation-detail-book-title">{citation.artwork.title}</div>

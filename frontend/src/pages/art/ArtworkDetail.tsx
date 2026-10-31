@@ -11,6 +11,7 @@ import { EditArtworkModal } from './EditArtworkModal'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
 import { Lightbox } from '../../components/ui/Lightbox'
 import { artworkInitials } from '../../components/art/artworkInitials'
+import { CoverImage } from '../../components/ui/CoverImage'
 import { IconChevronLeft, IconEdit, IconStar, IconTrash, IconExpand, IconPin } from '../../components/ui/icons'
 
 export function ArtworkDetail() {
@@ -100,7 +101,14 @@ export function ArtworkDetail() {
             >
               {artwork.coverUrl ? (
                 <>
-                  <img src={artwork.coverUrl} alt={artwork.title} />
+                  <CoverImage
+                    kind="artwork"
+                    id={artwork.id}
+                    src={artwork.coverUrl}
+                    alt={artwork.title}
+                    fallback={<span className="book-cover-initials book-cover-initials--lg">{artworkInitials(artwork.title)}</span>}
+                    onRecovered={coverUrl => setArtwork(a => (a ? { ...a, coverUrl } : a))}
+                  />
                   <button
                     type="button"
                     className="book-detail-cover-expand"

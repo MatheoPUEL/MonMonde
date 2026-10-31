@@ -29,7 +29,7 @@ export function EditBookModal({ book, onClose, onUpdated }: Props) {
     synopsis: book.synopsis || '',
     isbn: book.isbn || '',
     pageCount: book.pageCount?.toString() || '',
-    coverUrl: book.coverUrl || '',
+    coverUrl: book.coverSourceUrl || book.coverUrl || '',
     genres: book.genres,
   })
 

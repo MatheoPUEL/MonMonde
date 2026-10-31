@@ -46,6 +46,7 @@ export interface Book {
   genres: string[]
   coverUrl?: string
   coverType?: string
+  coverSourceUrl?: string
   googleBooksId?: string
   status: ReadingStatus
   owned: boolean

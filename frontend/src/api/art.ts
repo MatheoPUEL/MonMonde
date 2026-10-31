@@ -66,6 +66,7 @@ export interface Artwork {
   review?: string
   coverUrl?: string
   coverType?: string
+  coverSourceUrl?: string
   sourceApi?: string
   sourceId?: string
   sourceUrl?: string

@@ -38,7 +38,7 @@ export function EditArtworkModal({ artwork, onClose, onUpdated }: Props) {
     country: artwork.country || '',
     museum: artwork.museum || '',
     description: artwork.description || '',
-    coverUrl: artwork.coverUrl || '',
+    coverUrl: artwork.coverSourceUrl || artwork.coverUrl || '',
   })
 
   function handleClose() {

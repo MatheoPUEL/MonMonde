@@ -4,6 +4,7 @@ import { BookStatusBadge } from './BookStatusBadge'
 import { ProgressBar } from './ProgressBar'
 import { StarRating } from './StarRating'
 import { bookInitials } from './bookInitials'
+import { CoverImage } from '../ui/CoverImage'
 
 export function BookCard({ book }: { book: Book }) {
   const navigate = useNavigate()
@@ -11,11 +12,14 @@ export function BookCard({ book }: { book: Book }) {
   return (
     <div className="book-card" onClick={() => navigate(`/reading/${book.id}`)}>
       <div className="book-cover-wrap">
-        {book.coverUrl ? (
-          <img src={book.coverUrl} alt={book.title} loading="lazy" />
-        ) : (
-          <span className="book-cover-initials">{bookInitials(book.title)}</span>
-        )}
+        <CoverImage
+          kind="book"
+          id={book.id}
+          src={book.coverUrl}
+          alt={book.title}
+          loading="lazy"
+          fallback={<span className="book-cover-initials">{bookInitials(book.title)}</span>}
+        />
         {book.favorite && (
           <span className="book-cover-fav">★</span>
         )}

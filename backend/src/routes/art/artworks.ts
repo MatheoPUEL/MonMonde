@@ -2,6 +2,7 @@ import express, { Router } from 'express'
 import { requireAuth } from '../../middleware/auth'
 import { prisma } from '../../lib/prisma'
 import { uploadCover, uploadArtworkMedia, artworkMediaType } from '../../lib/upload'
+import { storeCover, recoverArtworkCover, localCoverExists } from '../../lib/covers'
 import notesRouter from './notes'
 
 const router = Router({ mergeParams: true })
@@ -80,7 +81,8 @@ router.post('/', async (req, res, next) => {
         movements: movements || [],
         currents: currents || [],
         themes: themes || [],
-        coverUrl, coverType, sourceApi, sourceId, sourceUrl,
+        ...await storeCover(coverUrl),
+        coverType, sourceApi, sourceId, sourceUrl,
         favorite: favorite || false,
         tags: tags?.length ? { create: (tags as string[]).map(name => ({ name })) } : undefined,
       },
@@ -168,7 +170,7 @@ router.put('/:id', async (req, res, next) => {
       ...(museum !== undefined && { museum }),
       ...(description !== undefined && { description }),
       ...(review !== undefined && { review }),
-      ...(coverUrl !== undefined && { coverUrl }),
+      ...await storeCover(coverUrl, existing),
       ...(coverType !== undefined && { coverType }),
       ...(favorite !== undefined && { favorite }),
     }
@@ -214,11 +216,29 @@ router.post('/:id/cover', uploadCover.single('cover'), async (req, res, next) =>
     const coverUrl = `/uploads/covers/${req.file.filename}`
     const artwork = await prisma.artwork.update({
       where: { id: req.params.id },
-      data: { coverUrl, coverType: 'upload' },
+      data: { coverUrl, coverType: 'upload', coverSourceUrl: null },
       include: { tags: true, artist: true, media: true },
     })
 
     res.json({ artwork, coverUrl })
+  } catch (err) { next(err) }
+})
+
+// POST /api/art/artworks/:id/cover/recover — called by the client when the cover fails to load
+router.post('/:id/cover/recover', async (req, res, next) => {
+  try {
+    const existing = await prisma.artwork.findFirst({ where: { id: req.params.id, userId: req.user!.id } })
+    if (!existing) { res.status(404).json({ error: 'Artwork not found' }); return }
+
+    if (localCoverExists(existing.coverUrl)) {
+      res.json({ coverUrl: existing.coverUrl })
+      return
+    }
+    const recovered = await recoverArtworkCover(existing)
+    if (!recovered) { res.status(404).json({ error: 'No cover found' }); return }
+
+    await prisma.artwork.update({ where: { id: existing.id }, data: { ...recovered, coverType: 'url' } })
+    res.json({ coverUrl: recovered.coverUrl })
   } catch (err) { next(err) }
 })
 

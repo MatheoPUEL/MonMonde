@@ -1,6 +1,7 @@
 import express, { Router } from 'express'
 import { requireAuth } from '../../middleware/auth'
 import { prisma } from '../../lib/prisma'
+import { storeCover, recoverBookCover, localCoverExists } from '../../lib/covers'
 import { uploadCover } from '../../lib/upload'
 import { ReadingStatus } from '@prisma/client'
 import notesRouter from './notes'
@@ -76,7 +77,8 @@ router.post('/', async (req, res, next) => {
         synopsis, isbn,
         pageCount: pageCount != null ? Number(pageCount) : undefined,
         genres: genres || [],
-        coverUrl, coverType, googleBooksId,
+        ...await storeCover(coverUrl),
+        coverType, googleBooksId,
         status: status || 'WISHLIST',
         owned: owned || false,
         tags: tags?.length ? { create: (tags as string[]).map(name => ({ name })) } : undefined,
@@ -148,6 +150,8 @@ router.put('/:id', async (req, res, next) => {
       authorId = authorRecord.id
     }
 
+    const cover = await storeCover(coverUrl, existing)
+
     let book
     if (tags !== undefined) {
       // Atomic: delete existing tags and update book in one transaction
@@ -162,7 +166,7 @@ router.put('/:id', async (req, res, next) => {
             ...(isbn !== undefined && { isbn }),
             ...(pageCount !== undefined && { pageCount: Number(pageCount) }),
             ...(genres !== undefined && { genres }),
-            ...(coverUrl !== undefined && { coverUrl }),
+            ...cover,
             ...(coverType !== undefined && { coverType }),
             ...(status !== undefined && { status }),
             ...(owned !== undefined && { owned }),
@@ -186,7 +190,7 @@ router.put('/:id', async (req, res, next) => {
           ...(isbn !== undefined && { isbn }),
           ...(pageCount !== undefined && { pageCount: Number(pageCount) }),
           ...(genres !== undefined && { genres }),
-          ...(coverUrl !== undefined && { coverUrl }),
+          ...cover,
           ...(coverType !== undefined && { coverType }),
           ...(status !== undefined && { status }),
           ...(owned !== undefined && { owned }),
@@ -250,11 +254,29 @@ router.post('/:id/cover', uploadCover.single('cover'), async (req, res, next) =>
     const coverUrl = `/uploads/covers/${req.file.filename}`
     const book = await prisma.book.update({
       where: { id: req.params.id },
-      data: { coverUrl, coverType: 'upload' },
+      data: { coverUrl, coverType: 'upload', coverSourceUrl: null },
       include: { tags: true, author: true },
     })
 
     res.json({ book, coverUrl })
+  } catch (err) { next(err) }
+})
+
+// POST /api/reading/books/:id/cover/recover — called by the client when the cover fails to load
+router.post('/:id/cover/recover', async (req, res, next) => {
+  try {
+    const existing = await prisma.book.findFirst({ where: { id: req.params.id, userId: req.user!.id } })
+    if (!existing) { res.status(404).json({ error: 'Book not found' }); return }
+
+    if (localCoverExists(existing.coverUrl)) {
+      res.json({ coverUrl: existing.coverUrl })
+      return
+    }
+    const recovered = await recoverBookCover(existing)
+    if (!recovered) { res.status(404).json({ error: 'No cover found' }); return }
+
+    await prisma.book.update({ where: { id: existing.id }, data: { ...recovered, coverType: 'url' } })
+    res.json({ coverUrl: recovered.coverUrl })
   } catch (err) { next(err) }
 })
 

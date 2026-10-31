@@ -5,6 +5,7 @@ import { ProgressBar } from '../reading/ProgressBar'
 import { bookInitials } from '../reading/bookInitials'
 import { Button } from '../ui/Button'
 import { IconReading } from '../ui/icons'
+import { CoverImage } from '../ui/CoverImage'
 
 const MAX_SHOWN = 3
 
@@ -42,10 +43,13 @@ export function WidgetLecture() {
                 onClick={() => navigate(`/reading/${book.id}`)}
               >
                 <div className="widget-reading-item-cover">
-                  {book.coverUrl
-                    ? <img src={book.coverUrl} alt={book.title} />
-                    : bookInitials(book.title)
-                  }
+                  <CoverImage
+                    kind="book"
+                    id={book.id}
+                    src={book.coverUrl}
+                    alt={book.title}
+                    fallback={bookInitials(book.title)}
+                  />
                 </div>
                 <div className="widget-reading-item-info">
                   <span className="widget-reading-item-title">{book.title}</span>

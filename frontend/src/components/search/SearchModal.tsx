@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { searchApi, type GlobalSearchResults, type SearchResultItem } from '../../api/search'
 import { IconSearch, IconReading, IconCitations, IconArt, IconJournal, IconRoutines, IconPerson } from '../ui/icons'
+import { CoverImage } from '../ui/CoverImage'
 
 interface Props {
   onClose: () => void
@@ -133,9 +134,20 @@ export function SearchModal({ onClose }: Props) {
                         onMouseEnter={() => setActiveIndex(idx)}
                         onClick={() => goTo(route)}
                       >
-                        {item.coverUrl
-                          ? <img src={item.coverUrl} alt="" className="search-result-cover" />
-                          : <span className="search-result-icon"><group.icon size={15} /></span>
+                        {item.coverUrl && (group.key === 'books' || group.key === 'artworks')
+                          ? (
+                            <CoverImage
+                              kind={group.key === 'books' ? 'book' : 'artwork'}
+                              id={item.id}
+                              src={item.coverUrl}
+                              alt=""
+                              className="search-result-cover"
+                              fallback={<span className="search-result-icon"><group.icon size={15} /></span>}
+                            />
+                          )
+                          : item.coverUrl
+                            ? <img src={item.coverUrl} alt="" className="search-result-cover" />
+                            : <span className="search-result-icon"><group.icon size={15} /></span>
                         }
                         <span className="search-result-info">
                           <span className="search-result-title">{item.title}</span>
